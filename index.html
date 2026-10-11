@@ -860,6 +860,8 @@ function showAuth(mode,msg,isErr){
   var h='<div class="auth-in">'+word;
   if(mode==='setup'){
     h+='<div class="stack"><h2>not connected yet</h2><p class="muted">This site needs its database details. Open <code>config.js</code> in the repository, paste in your Supabase project URL and anon key, and save. The setup guide has the exact steps.</p></div>';
+  }else if(mode==='badurl'){
+    h+='<div class="stack"><h2>check the address</h2><p class="muted">The Project URL in <code>config.js</code> does not look right. It should look like <code>https://abcdefgh.supabase.co</code>: it starts with https:// and has nothing after .supabase.co. Copy it from Supabase, Project Settings, API, Project URL.</p><p class="muted">What this page found: <code>'+esc(S.badUrl||'')+'</code></p></div>';
   }else if(mode==='pending'){
     h+='<div class="stack"><h2>waiting for approval</h2><p class="muted">'+esc(S.email||'Your account')+' is signed in. A manager needs to approve it in the Access tab. This page checks again automatically.</p><div class="links"><button class="btn" data-act="auth-refresh">Check now</button><button class="btn ghost" data-act="signout">Sign out</button></div></div>';
     if(!pendTimer)pendTimer=setInterval(function(){if(S.authMode==='pending')loadProfile()},12000);
@@ -876,6 +878,10 @@ function showAuth(mode,msg,isErr){
   }
   el.innerHTML=h+'</div>';
 }
+function netMsg(m){
+  if(/load failed|failed to fetch|networkerror|network request|fetch/i.test(String(m||'')))return 'Cannot reach the database at '+(S.host||'the address in config.js')+'. Check the Project URL in config.js, make sure the Supabase project is not paused or still setting up, and turn off any content blocker for this site.';
+  return m;
+}
 function authMsg(m,err){var e=$('#authMsg');if(e){e.textContent=m;e.className='msg'+(err?' err':'')}}
 function doAuth(){
   var mode=S.authMode;var em=$('#authEmail'),pw=$('#authPass');
@@ -883,10 +889,10 @@ function doAuth(){
   if(mode!=='recovery'&&!email){authMsg('Enter your email.',true);return}
   if(mode!=='forgot'&&pass.length<8){authMsg('Use at least 8 characters for the password.',true);return}
   authMsg('One moment…');
-  if(mode==='signin'){sb.auth.signInWithPassword({email:email,password:pass}).then(function(r){if(r.error)authMsg(r.error.message,true)})}
-  else if(mode==='signup'){sb.auth.signUp({email:email,password:pass}).then(function(r){if(r.error){authMsg(r.error.message,true);return}if(!r.data.session){authMsg('Check your email for a confirmation link, then sign in.')}})}
-  else if(mode==='forgot'){sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}).then(function(r){authMsg(r.error?r.error.message:'If that email has an account, a reset link is on its way.',!!r.error)})}
-  else if(mode==='recovery'){sb.auth.updateUser({password:pass}).then(function(r){if(r.error){authMsg(r.error.message,true);return}S.recovery=false;sb.auth.getSession().then(function(x){S.profileFor=null;handleSession(x.data.session)})})}
+  if(mode==='signin'){sb.auth.signInWithPassword({email:email,password:pass}).then(function(r){if(r.error)authMsg(netMsg(r.error.message),true)},function(e){authMsg(netMsg(e&&e.message),true)})}
+  else if(mode==='signup'){sb.auth.signUp({email:email,password:pass}).then(function(r){if(r.error){authMsg(netMsg(r.error.message),true);return}if(!r.data.session){authMsg('Check your email for a confirmation link, then sign in.')}},function(e){authMsg(netMsg(e&&e.message),true)})}
+  else if(mode==='forgot'){sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}).then(function(r){authMsg(r.error?netMsg(r.error.message):'If that email has an account, a reset link is on its way.',!!r.error)})}
+  else if(mode==='recovery'){sb.auth.updateUser({password:pass}).then(function(r){if(r.error){authMsg(netMsg(r.error.message),true);return}S.recovery=false;sb.auth.getSession().then(function(x){S.profileFor=null;handleSession(x.data.session)})})}
 }
 function handleSession(session){
   if(!session){if(S.started){location.reload();return}S.profileFor=null;S.uid=null;showAuth('signin');return}
@@ -963,8 +969,12 @@ function boot(){
   $('#ovYear').textContent='('+new Date().getFullYear()+')';
   syncYn();
   var cfg=window.CREW_CONFIG||{};
-  if(!cfg.url||!cfg.anonKey||/PASTE/.test(cfg.url+cfg.anonKey)||!window.supabase){showAuth('setup');return}
-  sb=window.supabase.createClient(cfg.url,cfg.anonKey);
+  var cfgUrl=String(cfg.url||'').trim().replace(/\/+$/,'').replace(/\/(rest|auth)\/v1.*$/,'');
+  var cfgKey=String(cfg.anonKey||'').trim();
+  S.host=cfgUrl.replace(/^https?:\/\//,'');
+  if(!cfgUrl||!cfgKey||/PASTE/.test(cfgUrl+cfgKey)||!window.supabase){showAuth('setup');return}
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(cfgUrl)){S.badUrl=String(cfg.url||'').slice(0,60);showAuth('badurl');return}
+  sb=window.supabase.createClient(cfgUrl,cfgKey);
   sb.auth.onAuthStateChange(function(ev,session){
     setTimeout(function(){
       if(ev==='PASSWORD_RECOVERY'){S.recovery=true;showAuth('recovery');return}
