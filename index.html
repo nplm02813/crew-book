@@ -306,7 +306,6 @@ input[type=email]:focus,input[type=password]:focus{outline:0;border-color:var(--
 <div class="auth" id="auth" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<script src="config.js"></script>
 <script>
 (function(){
 'use strict';
@@ -876,7 +875,7 @@ function showAuth(mode,msg,isErr){
     else if(mode!=='recovery')h+='<button class="btn ghost" type="button" data-act="auth-mode" data-mode="signin">Back to sign in</button>';
     h+='</div></form>';
   }
-  el.innerHTML=h+'</div>';
+  el.innerHTML=h+(S.host?'<p class="small muted" id="connLine">'+esc(connText())+'</p>':'')+'</div>';
 }
 function netMsg(m){
   if(/load failed|failed to fetch|networkerror|network request|fetch/i.test(String(m||'')))return 'Cannot reach the database at '+(S.host||'the address in config.js')+'. Check the Project URL in config.js, make sure the Supabase project is not paused or still setting up, and turn off any content blocker for this site.';
@@ -963,7 +962,17 @@ function startApp(p){
   schedule();
 }
 
+var BUILD='2026-10-11.3';
+function connText(){return 'Build '+BUILD+' \u00b7 '+(S.host||'no address')+' \u00b7 '+(S.conn||'checking connection\u2026')}
+function setConn(t){S.conn=t;var e=$('#connLine');if(e)e.textContent=connText()}
 function boot(){
+  var sc=document.createElement('script');
+  sc.src='config.js?v='+Date.now();
+  sc.onload=boot2;
+  sc.onerror=function(){window.CREW_CONFIG=window.CREW_CONFIG||{};boot2()};
+  document.head.appendChild(sc);
+}
+function boot2(){
   $('#ckDate').value=today();
   $('#ovDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
   $('#ovYear').textContent='('+new Date().getFullYear()+')';
@@ -975,6 +984,10 @@ function boot(){
   if(!cfgUrl||!cfgKey||/PASTE/.test(cfgUrl+cfgKey)||!window.supabase){showAuth('setup');return}
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(cfgUrl)){S.badUrl=String(cfg.url||'').slice(0,60);showAuth('badurl');return}
   sb=window.supabase.createClient(cfgUrl,cfgKey);
+  try{
+    var ctl=new AbortController();var to=setTimeout(function(){ctl.abort()},12000);
+    fetch(cfgUrl+'/auth/v1/health',{headers:{apikey:cfgKey},signal:ctl.signal}).then(function(r){clearTimeout(to);setConn(r.ok?'database reachable':'database answered with error '+r.status+(r.status===401?' (check the anon key)':''))}).catch(function(e){clearTimeout(to);setConn('cannot reach database ('+((e&&e.name==='AbortError')?'timed out':((e&&e.message)||'blocked'))+')')});
+  }catch(e){setConn('connection check unavailable')}
   sb.auth.onAuthStateChange(function(ev,session){
     setTimeout(function(){
       if(ev==='PASSWORD_RECOVERY'){S.recovery=true;showAuth('recovery');return}
