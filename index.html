@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1f1ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crew Book">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Crew Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Direction: an editorial index. Giant lowercase wordmark stacked with version and year, text-led rows separated by hairlines, counts in brackets, mono labels. Monochrome with one signal orange used only for what needs attention. Ratings are a grey ramp of ink strength. */
+:root{
+  color-scheme:light;
+  --bg:#f1f1ee; --surface:#f1f1ee; --surface2:#e5e5e0; --ink:#0e0e0d; --muted:#76766f; --line:rgba(14,14,13,.16); --rule:#0e0e0d;
+  --accent:#ff4a1c; --accent-ink:#f1f1ee; --accent-soft:#e5e5e0;
+  --good:#0e0e0d; --good-soft:#0e0e0d; --warn:#d63a10; --warn-soft:#f1f1ee; --bad:#ff4a1c; --bad-soft:#ff4a1c;
+  --s0:#ff4a1c; --s0t:#f1f1ee; --s1:#cfcfc8; --s1t:#0e0e0d; --s2:#7d7d76; --s2t:#f1f1ee; --s3:#0e0e0d; --s3t:#f1f1ee;
+  --f-display:"Geist","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Geist","Helvetica Neue",Arial,sans-serif;
+  --f-label:"Geist Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-mono:"Geist Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0c0c0b; --surface:#0c0c0b; --surface2:#1b1b19; --ink:#f1f1ee; --muted:#8c8c85; --line:rgba(241,241,238,.18); --rule:#f1f1ee;
+  --accent:#ff6a3d; --accent-ink:#0c0c0b; --accent-soft:#1b1b19;
+  --good:#f1f1ee; --good-soft:#f1f1ee; --warn:#ff7a52; --warn-soft:#0c0c0b; --bad:#ff6a3d; --bad-soft:#ff6a3d;
+  --s0:#ff6a3d; --s0t:#0c0c0b; --s1:#34342f; --s1t:#f1f1ee; --s2:#85857e; --s2t:#0c0c0b; --s3:#f1f1ee; --s3t:#0c0c0b}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0c0c0b; --surface:#0c0c0b; --surface2:#1b1b19; --ink:#f1f1ee; --muted:#8c8c85; --line:rgba(241,241,238,.18); --rule:#f1f1ee;
+  --accent:#ff6a3d; --accent-ink:#0c0c0b; --accent-soft:#1b1b19;
+  --good:#f1f1ee; --good-soft:#f1f1ee; --warn:#ff7a52; --warn-soft:#0c0c0b; --bad:#ff6a3d; --bad-soft:#ff6a3d;
+  --s0:#ff6a3d; --s0t:#0c0c0b; --s1:#34342f; --s1t:#f1f1ee; --s2:#85857e; --s2t:#0c0c0b; --s3:#f1f1ee; --s3t:#0c0c0b}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:500;text-wrap:balance}
+h2{font-size:clamp(44px,9vw,96px);line-height:.92;letter-spacing:-.055em;text-transform:lowercase}
+h3{font-family:var(--f-label);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1.3}
+p{margin:0}
+sup{font-size:.4em;vertical-align:top;position:relative;top:.15em;letter-spacing:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:13px}
+.label{font-family:var(--f-label);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:400}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--rule)}
+.menubar{display:flex;align-items:center;flex-wrap:wrap;gap:0 20px}
+.brand{order:1;margin-right:auto;font-size:22px;font-weight:500;letter-spacing:-.05em;line-height:1;padding-block:14px 8px}
+.who{order:2;display:flex;align-items:center;padding-top:6px}
+.menubtn{display:none}
+.nav{order:3;flex-basis:100%;min-width:0;display:flex;flex-direction:row;gap:20px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{flex:none;background:none;border:0;border-bottom:2px solid transparent;padding:8px 0 10px;cursor:pointer;font-size:14px;font-weight:400;color:var(--muted);white-space:nowrap}
+.nav button .n{margin-left:2px}
+.nav button:hover{color:var(--ink)}
+.nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+@media (min-width:860px){
+  .menubar{flex-wrap:nowrap;min-height:52px}
+  .brand{padding-block:14px}
+  .who{order:3;padding-top:0}
+  .nav{order:2;flex:1;flex-basis:auto;justify-content:flex-end;gap:22px}
+  .nav button{padding:6px 0}
+}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+main{padding-block:28px 100px;display:grid;gap:44px}
+section.tab[hidden]{display:none!important}
+.tab{display:grid;gap:36px}
+.hero{display:grid;gap:18px;padding-top:12px}
+.hero-word{font-size:clamp(64px,19vw,168px);line-height:.86;letter-spacing:-.065em;font-weight:500;text-transform:lowercase}
+.hero-word span{display:block}
+.hero-word span+span{color:var(--muted)}
+.hero p{max-width:44ch;color:var(--muted)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head>div:first-child{display:grid;gap:14px}
+.head p{color:var(--muted);max-width:52ch}
+.head .label{margin-bottom:0}
+
+/* sections (no boxes: a rule and a label) */
+.card{background:none;border:0;border-top:1px solid var(--rule);border-radius:0;padding:14px 0 0;min-width:0}
+.card.flat{border:1px dashed var(--line);padding:14px}
+.card>h3:first-child{margin-bottom:14px}
+.card>.row:first-child{margin-bottom:10px;justify-content:space-between}
+.card.empty{padding:40px 0;justify-items:start;text-align:left}
+.grid{display:grid;gap:36px 28px}
+.g-auto{grid-template-columns:1fr;gap:0;border-bottom:1px solid var(--rule)}
+.g-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.stats{display:grid;grid-template-columns:1fr;gap:0;border-top:1px solid var(--rule)}
+.stat{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.stat b{font-size:34px;line-height:1;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.stack{display:grid;gap:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+@media (min-width:900px){#ovBody>.stats{grid-template-columns:repeat(5,1fr);gap:0 24px;border-top:0}#ovBody>.stats .stat{display:grid;gap:14px;border-top:1px solid var(--rule);border-bottom:0;padding-top:10px}}
+
+/* controls */
+.btn{background:var(--ink);color:var(--bg);border:1px solid var(--ink);border-radius:0;padding:9px 16px;font-family:var(--f-label);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
+.btn.danger:hover{background:var(--bad);color:var(--accent-ink)}
+.btn.sm{padding:5px 10px;font-size:11px}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.field{display:grid;gap:4px;min-width:0}
+.field>span{font-family:var(--f-label);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:8px 0;min-width:0}
+textarea{border:1px solid var(--rule);padding:8px;resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 1px 0 var(--accent)}
+textarea:focus{box-shadow:none}
+input[type=checkbox]{accent-color:var(--ink);width:18px;height:18px}
+input:disabled,select:disabled,textarea:disabled{color:var(--muted);border-color:var(--line)}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 9px) 55%,calc(100% - 4px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:20px}
+.form{display:grid;gap:18px 20px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.form .wide{grid-column:1/-1}
+.pill{display:inline-flex;align-items:center;border:1px solid var(--muted);border-radius:0;padding:0 6px;font-family:var(--f-label);font-size:11px;letter-spacing:.02em;text-transform:lowercase;color:var(--muted);background:transparent;white-space:nowrap;line-height:1.7}
+.pill.good{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.acc{color:var(--ink);border-color:var(--ink)}
+.pill.warn{color:var(--warn);border-color:var(--warn)}
+.pill.bad{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip{border:1px solid var(--rule);background:transparent;border-radius:0;padding:3px 10px;cursor:pointer;font-family:var(--f-label);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* yes/no */
+.yn{display:inline-flex;justify-self:start;border:1px solid var(--rule)}
+.yn button{background:transparent;border:0;padding:9px 22px;cursor:pointer;font-family:var(--f-label);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.yn button+button{border-left:1px solid var(--rule)}
+.yn button.ok{background:var(--ink);color:var(--bg)}
+.yn button.no{background:var(--accent);color:var(--accent-ink)}
+
+/* rating segments */
+.seg{display:inline-flex;gap:0}
+.seg button{width:34px;height:30px;border:1px solid var(--rule);margin-left:-1px;background:transparent;cursor:pointer;font-family:var(--f-mono);font-size:12px}
+.seg button:first-child{margin-left:0}
+.seg button:hover:not([disabled]){background:var(--surface2)}
+.seg button.on.s0{background:var(--s0);color:var(--s0t)}
+.seg button.on.s1{background:var(--s1);color:var(--s1t)}
+.seg button.on.s2{background:var(--s2);color:var(--s2t)}
+.seg button.on.s3{background:var(--s3);color:var(--s3t)}
+.seg button[disabled]{cursor:default}
+.skillrow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.skillrow>span{flex:1;min-width:0}
+
+/* skill strip */
+.strip{display:grid;grid-template-columns:repeat(14,1fr);gap:2px;height:16px}
+.strip i{background:transparent;border:1px solid var(--line)}
+.strip i.v0{background:var(--s0);border-color:var(--s0)} .strip i.v1{background:var(--s1);border-color:var(--s1)} .strip i.v2{background:var(--s2);border-color:var(--s2)} .strip i.v3{background:var(--s3);border-color:var(--s3)}
+
+/* team rows */
+.person{text-align:left;cursor:pointer;width:100%;display:grid;gap:14px 28px;background:none;border:0;border-top:1px solid var(--rule);border-radius:0;padding:18px 0;color:inherit;align-items:center}
+.person:hover{background:var(--surface2)}
+.person h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-family:var(--f-display);font-size:clamp(28px,5vw,44px);letter-spacing:-.045em;text-transform:none;font-weight:500;line-height:1}
+.person .small{margin-top:4px}
+.kv{display:flex;gap:20px;flex-wrap:wrap}
+.kv div{display:grid;gap:2px}
+.kv b{font-size:26px;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+@media (min-width:820px){.person{grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) auto}}
+
+.list{display:grid;gap:0}
+.item{display:grid;gap:6px;padding:12px 0;border-bottom:1px solid var(--line);min-width:0}
+.item:last-child{border-bottom:0}
+.item .t{font-weight:500}
+.ratio{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.empty h3{font-family:var(--f-display);font-size:clamp(34px,6vw,56px);letter-spacing:-.05em;text-transform:none;line-height:1}
+.empty p{max-width:46ch;color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--f-label);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(600px,100%);background:var(--bg);z-index:41;border-left:1px solid var(--rule);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.drawer-head{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.drawer-head input{font-family:var(--f-display);font-size:34px;font-weight:500;letter-spacing:-.045em;border:0;padding:0;flex:1}
+.drawer-body{overflow-y:auto;padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px));display:grid;gap:30px;align-content:start}
+.drawer h3{margin-bottom:10px;padding-top:12px;border-top:1px solid var(--rule)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;z-index:60;max-width:calc(100% - 32px);font-family:var(--f-label);font-size:12px;letter-spacing:.03em}
+.bar{height:3px;background:var(--line)}
+.bar>i{display:block;height:100%;background:var(--ink)}
+@media (max-width:560px){.seg button{width:32px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* standalone page basics + login screen */
+body{margin:0}
+[hidden]{display:none!important}
+:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+input[type=email],input[type=password]{width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:8px 0;min-width:0}
+input[type=email]:focus,input[type=password]:focus{outline:0;border-color:var(--accent);box-shadow:0 1px 0 var(--accent)}
+.auth{position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto;padding:24px 16px 48px}
+.auth-in{max-width:440px;margin:0 auto;display:grid;gap:26px;padding-top:4vh}
+.auth .hero-word{font-size:clamp(72px,24vw,132px)}
+.auth h2{font-size:clamp(34px,9vw,52px)}
+.auth .msg{min-height:1.5em;color:var(--muted)}
+.auth .msg.err{color:var(--accent)}
+.auth .links{display:flex;gap:8px;flex-wrap:wrap}
+.auth code{font-family:var(--f-mono);font-size:13px;background:var(--surface2);padding:1px 5px}
+</style>
+</head>
+<body>
+
+
+<div id="app" hidden>
+<header class="top" id="top"><div class="wrap menubar"><div class="brand">crew<sup>®</sup></div><div class="who" id="who"></div><nav class="nav" id="nav" aria-label="Sections"><button data-act="tab" data-tab="overview" data-label="Today" aria-selected="true">Today</button><button data-act="tab" data-tab="team" data-label="Team" aria-selected="false">Team</button><button data-act="tab" data-tab="roles" data-label="Responsibilities" aria-selected="false">Responsibilities</button><button data-act="tab" data-tab="checks" data-label="Coffee checks" aria-selected="false">Coffee checks</button><button data-act="tab" data-tab="lead" data-label="Leadership" aria-selected="false">Leadership</button><button data-act="tab" data-tab="ideas" data-label="Ideas" aria-selected="false">Ideas</button><button data-act="tab" data-tab="access" data-label="Access" aria-selected="false" hidden>Access</button></nav></div></header>
+
+<main class="wrap">
+  <div id="notice"></div>
+
+  <section class="tab" id="tab-overview">
+    <div class="hero"><div class="label" id="ovDate"></div><h1 class="hero-word"><span>crew<sup>®</sup></span><span>/v.01</span><span id="ovYear">(2026)</span></h1><p>What needs attention, who is ready for more, and where the team is thin.</p></div>
+    <div id="ovBody" class="stack"></div>
+  </section>
+
+  <section class="tab" id="tab-team" hidden>
+    <div class="head">
+      <div><h2>Team</h2><p>Everyone on the bar, what each person can do, and what to give them next.</p></div>
+      <div class="row" id="teamTools"></div>
+    </div>
+    <div class="legend" aria-label="Rating scale"><span><i style="background:var(--s0)"></i>0 Not trained</span><span><i style="background:var(--s1)"></i>1 Learning</span><span><i style="background:var(--s2)"></i>2 Independent</span><span><i style="background:var(--s3)"></i>3 Can train others</span></div>
+    <div id="teamGrid" class="grid g-auto"></div>
+  </section>
+
+  <section class="tab" id="tab-roles" hidden>
+    <div class="head"><div><h2>Responsibilities</h2><p>Each duty lists the skills it needs. People who meet every skill level show as ready, and people one step away show as almost.</p></div></div>
+    <div id="rolesBody" class="grid g-2"></div>
+  </section>
+
+  <section class="tab" id="tab-checks" hidden>
+    <div class="head"><div><h2>Coffee checks</h2><p>Log each check of the coffee. Anything skipped, off-recipe or not brewing well is flagged for follow-up.</p></div></div>
+    <form class="card stack" id="checkForm" autocomplete="off"><h3>Log a coffee check</h3>
+      <div class="form">
+        <label class="field"><span>Date</span><input type="date" id="ckDate"></label>
+        <label class="field"><span>Shift</span><select id="ckShift"><option>Opening</option><option>Mid-day</option><option>Closing</option><option>Other</option></select></label>
+        <label class="field"><span>Barista</span><select id="ckWho"></select></label>
+        <label class="field"><span>Coffee / beans</span><input type="text" id="ckCoffee" list="coffeeList" placeholder="House espresso blend"><datalist id="coffeeList"></datalist></label>
+      </div>
+      <div class="form">
+        <div class="field"><span>Did you check the coffee?</span><div class="yn" data-q="checked"><button type="button" data-act="yn" data-q="checked" data-v="1">Yes</button><button type="button" data-act="yn" data-q="checked" data-v="0">No</button></div></div>
+        <div class="field"><span>Any problem with the recipe?</span><div class="yn" data-q="recipe"><button type="button" data-act="yn" data-q="recipe" data-v="1">Yes</button><button type="button" data-act="yn" data-q="recipe" data-v="0">No</button></div></div>
+        <div class="field"><span>Is it brewing well?</span><div class="yn" data-q="brew"><button type="button" data-act="yn" data-q="brew" data-v="1">Yes</button><button type="button" data-act="yn" data-q="brew" data-v="0">No</button></div></div>
+      </div>
+      <div class="form">
+        <label class="field"><span>Dose in (g)</span><input type="number" id="ckDose" step="0.1" min="0" inputmode="decimal"></label>
+        <label class="field"><span>Yield out (g)</span><input type="number" id="ckYield" step="0.1" min="0" inputmode="decimal"></label>
+        <label class="field"><span>Time (sec)</span><input type="number" id="ckTime" step="1" min="0" inputmode="numeric"></label>
+        <div class="field"><span>Ratio</span><div class="mono" id="ckRatio" style="padding:8px 0">—</div></div>
+        <label class="field wide"><span>Taste notes</span><input type="text" id="ckTaste" placeholder="Sour and thin, ran fast"></label>
+        <label class="field wide"><span>What did you change or what needs fixing?</span><input type="text" id="ckFix" placeholder="Ground finer by 2 steps, re-pulled, now 27 s"></label>
+      </div>
+      <div class="row between"><span class="small muted" id="ckMsg">Answer the three questions to log the check.</span><button class="btn" type="submit">Log check</button></div>
+    </form>
+    <div class="card"><h3>Last 30 days by barista</h3><div id="ckSummary" class="list" style="margin-top:8px"></div></div>
+    <div class="card">
+      <div class="row between"><h3>Recent checks</h3><div class="row"><button class="chip" data-act="ckfilter" data-v="all" aria-pressed="true">All</button><button class="chip" data-act="ckfilter" data-v="flag" aria-pressed="false">Follow-up only</button></div></div>
+      <div id="ckList" class="list" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-lead" hidden>
+    <div class="head"><div><h2>Leadership group</h2><p>A small group working together at one location to learn how the shop runs, and the people who could become head barista.</p></div></div>
+    <div id="leadRoster" class="stack"></div>
+    <div class="card"><h3>8-week plan</h3><p class="muted small" style="margin:2px 0 6px">What the group does together each week and what they bring back.</p><div id="leadPlan" class="list"></div></div>
+    <div class="card" id="leadScoring" hidden></div>
+  </section>
+
+  <section class="tab" id="tab-ideas" hidden>
+    <div class="head"><div><h2>Improvement ideas</h2><p>Problems people see and changes they would make. Ideas are ranked by impact and effort.</p></div></div>
+    <form class="card stack" id="ideaForm" autocomplete="off"><h3>New idea</h3>
+      <div class="form">
+        <label class="field"><span>Raised by</span><select id="idWho"></select></label>
+        <label class="field"><span>Area</span><select id="idArea"></select></label>
+        <label class="field"><span>Expected impact</span><select id="idImpact"><option>High</option><option selected>Medium</option><option>Low</option></select></label>
+        <label class="field"><span>Effort</span><select id="idEffort"><option>High</option><option>Medium</option><option selected>Low</option></select></label>
+        <label class="field wide"><span>What problem did you see?</span><textarea id="idProblem" rows="2" placeholder="Milk fridge is far from the machine, six steps per latte in the rush"></textarea></label>
+        <label class="field wide"><span>What would you change?</span><textarea id="idChange" rows="2" placeholder="Move the fridge next to the steam wand and mark a syrup station"></textarea></label>
+      </div>
+      <div class="row between"><span class="small muted" id="idMsg"></span><button class="btn" type="submit">Add idea</button></div>
+    </form>
+    <div class="card"><div id="ideaList" class="list"></div></div>
+  </section>
+
+  <section class="tab" id="tab-access" hidden>
+    <div class="head"><div><h2>access</h2><p>Approve people who sign up and choose who is a manager. Managers can edit ratings and assignments and see leadership scorecards.</p></div></div>
+    <div class="card"><h3>People</h3><div id="accessList" class="list"></div></div>
+  </section>
+</main>
+
+<div id="drawerMount"></div>
+</div>
+<div id="toastMount" aria-live="polite"></div>
+<div class="auth" id="auth" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+
+/* ---------- reference data ---------- */
+var SKILLS=[
+ {k:'espresso',n:'Espresso & dialing in',g:'On the bar'},{k:'milk',n:'Milk steaming & latte art',g:'On the bar'},{k:'batch',n:'Batch / filter brew',g:'On the bar'},{k:'pour',n:'Pour-over & manual brew',g:'On the bar'},{k:'speed',n:'Speed on a busy bar',g:'On the bar'},
+ {k:'pos',n:'Register / POS',g:'Customers'},{k:'cs',n:'Customer service',g:'Customers'},{k:'diff',n:'Handling difficult customers',g:'Customers'},
+ {k:'open',n:'Opening routine',g:'Running the shop'},{k:'close',n:'Closing routine',g:'Running the shop'},{k:'cash',n:'Cash handling & deposits',g:'Running the shop'},{k:'inv',n:'Inventory & ordering',g:'Running the shop'},{k:'clean',n:'Cleaning & machine maintenance',g:'Running the shop'},
+ {k:'train',n:'Training new staff',g:'People'}
+];
+var SK={}; SKILLS.forEach(function(s){SK[s.k]=s});
+var RESP=[
+ {k:'open',n:'Open the shop & set up the bar',c:'Daily ops',s:['open','espresso'],m:2},
+ {k:'close',n:'Close the shop & final clean',c:'Daily ops',s:['close','clean'],m:2},
+ {k:'dial',n:'Dial in espresso each morning',c:'Quality',s:['espresso'],m:3},
+ {k:'rush',n:'Run the bar during the rush',c:'Daily ops',s:['speed','milk'],m:2},
+ {k:'cash',n:'Cash counts & bank deposit',c:'Admin',s:['cash'],m:2},
+ {k:'order',n:'Order milk, beans & supplies',c:'Admin',s:['inv'],m:2},
+ {k:'maint',n:'Machine cleaning & maintenance log',c:'Quality',s:['clean'],m:2},
+ {k:'complaints',n:'Handle complaints & escalations',c:'Service',s:['diff','cs'],m:2},
+ {k:'trainer',n:'Train new baristas',c:'People',s:['train'],m:3},
+ {k:'lead',n:'Shift lead',c:'People',s:['open','close','train','cs'],m:2}
+];
+var COMPS=[
+ {k:'quality',n:'Coffee quality & consistency',w:5},{k:'process',n:'Spots problems, thinks in process',w:5},{k:'initiative',n:'Takes initiative & ownership',w:4},
+ {k:'comms',n:'Communication & team trust',w:4},{k:'coach',n:'Coaching & teaching others',w:4},{k:'reliable',n:'Reliability & follow-through',w:5},
+ {k:'calm',n:'Calm under pressure',w:3},{k:'decide',n:'Decision-making',w:4},{k:'biz',n:'Cost, waste & business awareness',w:3},{k:'feedback',n:'Open to feedback & handles conflict',w:3}
+];
+var PLAN=[
+ ['Map the shop','Shadow opening and closing. Write down every step of a normal day and who does it.','A workflow map of a normal day'],
+ ['Watch the rush','Time the peak hours. Note queues, bottlenecks and where orders or drinks wait.','Bottlenecks with times'],
+ ['Coffee quality','Review the coffee check log and the recipes. Taste together and find problems that repeat.','Recurring quality problems and proposed standards'],
+ ['Stock, waste & ordering','Track waste and shortages for the week and trace what caused them.','Waste and shortage list with likely causes'],
+ ['Customers & team','Collect customer feedback and teammates’ frustrations in short conversations.','Top 5 pain points'],
+ ['Propose changes','Turn what you saw into one or two ideas each, ranked by impact and effort.','Ranked proposals'],
+ ['Pilot','The owner approves one or two changes. The group runs them for a week with one clear measure.','Before and after numbers'],
+ ['Present & decide','Present results to the owner, discuss changes to the structure and decide who moves on the head barista track.','Decisions and next steps']
+];
+var AREAS=['Workflow & bar layout','Menu & recipes','Coffee quality','Ordering & inventory','Waste & cost','Customer flow & service','Training & onboarding','Scheduling & roles','Cleaning & maintenance','Other'];
+var ROLES=['Trainee','Barista','Senior barista','Shift lead','Head barista'];
+var STATUSES=['Idea','Reviewing','Pilot','Adopted','Rejected'];
+var DEF_CFG={techShare:0.4,ready:2.5,dev:2.0};
+
+/* ---------- state ---------- */
+var S={people:[],uid:null,started:false,profileFor:null,recovery:false,authMode:'signin',baristas:[],checks:[],ideas:[],assign:{},plan:{},score:{},cfg:{},tab:'overview',openId:null,admin:false,meId:null,db:null,loaded:false,ckFilter:'all',yn:{checked:null,recipe:null,brew:null},confirm:null};
+var db=null,sb=null,pendTimer=null,peopleTimer=null;
+
+/* ---------- helpers ---------- */
+function pad(n){return String(n).padStart(2,'0')}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function today(){return ymd(new Date())}
+function daysAgo(n){var d=new Date();d.setDate(d.getDate()-n);return ymd(d)}
+function n1(v){return v==null?'—':(Math.round(v*10)/10).toFixed(1)}
+function pct(v){return v==null?'—':Math.round(v*100)+'%'}
+function byName(a,b){return String(a.name||'').localeCompare(String(b.name||''))}
+function bget(id){for(var i=0;i<S.baristas.length;i++){if(S.baristas[i].id===id)return S.baristas[i]}return null}
+function bname(id){var b=bget(id);return b?b.name||'Unnamed':'Former barista'}
+function cfg(){return {techShare:S.cfg.techShare!=null?S.cfg.techShare:DEF_CFG.techShare,ready:S.cfg.ready!=null?S.cfg.ready:DEF_CFG.ready,dev:S.cfg.dev!=null?S.cfg.dev:DEF_CFG.dev}}
+function weight(k){var w=S.cfg.weights&&S.cfg.weights[k];if(typeof w==='number')return w;for(var i=0;i<COMPS.length;i++){if(COMPS[i].k===k)return COMPS[i].w}return 1}
+function skillVal(b,k){var v=b.skills&&b.skills[k];return typeof v==='number'?v:null}
+function ratedVals(b){var o=[];SKILLS.forEach(function(s){var v=skillVal(b,s.k);if(v!=null)o.push(v)});return o}
+function techAvg(b){var r=ratedVals(b);if(!r.length)return null;return r.reduce(function(a,c){return a+c},0)/r.length}
+function expertCount(b){return ratedVals(b).filter(function(v){return v===3}).length}
+function gapCount(b){return ratedVals(b).filter(function(v){return v<=1}).length}
+function respStatus(r,b){
+  var short=0,missing=false;
+  r.s.forEach(function(k){var v=skillVal(b,k);if(v==null){missing=true}else if(v<r.m){short+=r.m-v}});
+  if(missing)return 'unknown';
+  if(short===0)return 'ready';
+  if(short===1)return 'almost';
+  return 'no';
+}
+function leadScore(id){
+  var sc=S.score[id];if(!sc||!sc.ratings)return null;var num=0,den=0;
+  COMPS.forEach(function(c){var v=sc.ratings[c.k];if(typeof v==='number'){var w=weight(c.k);num+=v*w;den+=w}});
+  return den?num/den:null;
+}
+function overall(b){var t=techAvg(b),l=leadScore(b.id);if(t==null||l==null)return null;var sh=cfg().techShare;return sh*t+(1-sh)*l}
+function readiness(b){
+  var o=overall(b),l=leadScore(b.id);if(o==null)return null;var c=cfg();
+  if(o>=c.ready&&l>=2)return {t:'Ready for head barista track',k:'good'};
+  if(o>=c.dev)return {t:'Developing: give a project',k:'warn'};
+  return {t:'Not yet: keep building',k:''};
+}
+function isFlag(c){return c.checked===false||c.recipeProblem===true||c.brewingWell===false}
+function checkStats(id,from){
+  var cs=S.checks.filter(function(c){return c.baristaId===id&&(!from||c.date>=from)});
+  var done=cs.filter(function(c){return c.checked}).length;
+  return {n:cs.length,done:done,flags:cs.filter(isFlag).length,pct:cs.length?done/cs.length:null};
+}
+function ideaPriority(i){
+  if(i.impact==='High'&&i.effort!=='High')return {t:'Do first',r:0,k:'good'};
+  if(i.impact==='High')return {t:'Plan it',r:1,k:'acc'};
+  if(i.impact==='Medium'&&i.effort==='Low')return {t:'Quick win',r:2,k:'acc'};
+  return {t:'Later',r:3,k:''};
+}
+function ratio(d,y){d=parseFloat(d);y=parseFloat(y);return d>0&&y>0?'1:'+(y/d).toFixed(1):null}
+function pill(t,k){return '<span class="pill '+(k||'')+'">'+esc(t)+'</span>'}
+function sampleTag(x){return x&&x.sample?' <span class="pill">Sample</span>':''}
+var tq={};
+function queue(key,fn){var p=(tq[key]||Promise.resolve()).then(fn,fn).catch(function(e){fail(e)});tq[key]=p;return p}
+function fail(e){var c=e&&e.code;toast(c==='invalid_argument'||c==='not_granted'?'You don’t have permission to change that.':(c==='quota_exceeded'?'The database is full. Delete some old entries.':'That didn’t save. Try again.'))}
+var toastT;
+function toast(m){var el=$('#toastMount');el.innerHTML='<div class="toast">'+esc(m)+'</div>';clearTimeout(toastT);toastT=setTimeout(function(){el.innerHTML=''},3200)}
+
+/* ---------- shared fragments ---------- */
+function strip(b){return '<div class="strip" aria-hidden="true">'+SKILLS.map(function(s){var v=skillVal(b,s.k);return '<i class="'+(v==null?'':'v'+v)+'" title="'+esc(s.n)+(v==null?': not rated':': '+v)+'"></i>'}).join('')+'</div>'}
+function seg(kind,key,val,dis,label){
+  return '<div class="seg" role="group" aria-label="'+esc(label)+'">'+[0,1,2,3].map(function(v){
+    return '<button type="button" class="'+(val===v?'on s'+v:'')+'" data-act="rate" data-kind="'+kind+'" data-key="'+key+'" data-v="'+v+'" aria-pressed="'+(val===v)+'"'+(dis?' disabled':'')+'>'+v+'</button>';
+  }).join('')+'</div>';
+}
+function emptyTeam(){
+  return '<div class="card empty"><h3>No baristas yet</h3><p>Add the people on your team to start rating skills, logging coffee checks and planning who can take on what.</p>'
+   +(S.admin?'<div class="row" style="justify-content:center"><button class="btn" data-act="goto-add">Add the first barista</button><button class="btn ghost" data-act="sample-load">Load a sample team</button></div>':'<p>A manager needs to add the team first.</p>')+'</div>';
+}
+
+/* ---------- overview ---------- */
+function renderOverview(){
+  var el=$('#ovBody');
+  var pend0=S.admin?S.people.filter(function(p){return !p.approved}).length:0;
+  if(!S.baristas.length){el.innerHTML=(pend0?'<div class="card flat row between"><span>'+pend0+(pend0===1?' person is':' people are')+' waiting for access.</span><button class="btn sm" data-act="tab" data-tab="access">Review</button></div>':'')+emptyTeam();return}
+  var wk=daysAgo(6);
+  var weekChecks=S.checks.filter(function(c){return c.date>=wk});
+  var flags=weekChecks.filter(isFlag).sort(function(a,b){return (b.date+(b.createdAt||0))>(a.date+(a.createdAt||0))?1:-1});
+  var cohort=S.baristas.filter(function(b){return b.inCohort});
+  var live=S.ideas.filter(function(i){return i.status==='Pilot'||i.status==='Reviewing'||i.status==='Idea'});
+  var td=today();
+  var missing=S.baristas.filter(function(b){return !S.checks.some(function(c){return c.baristaId===b.id&&c.date===td})}).sort(byName);
+  var pendN=S.admin?S.people.filter(function(p){return !p.approved}).length:0;
+  var h=(pendN?'<div class="card flat row between"><span>'+pendN+(pendN===1?' person is':' people are')+' waiting for access.</span><button class="btn sm" data-act="tab" data-tab="access">Review</button></div>':'')+'<div class="stats">'
+   +'<div class="stat"><span class="label">Baristas</span><b>'+S.baristas.length+'</b></div>'
+   +'<div class="stat"><span class="label">Checks, 7 days</span><b>'+weekChecks.length+'</b></div>'
+   +'<div class="stat"><span class="label">Follow-ups, 7 days</span><b style="color:'+(flags.length?'var(--bad)':'inherit')+'">'+flags.length+'</b></div>'
+   +'<div class="stat"><span class="label">Ideas in play</span><b>'+live.length+'</b></div>'
+   +'<div class="stat"><span class="label">In leadership group</span><b>'+cohort.length+'</b></div></div>';
+  h+='<div class="grid g-2">';
+  h+='<div class="card"><h3>Needs attention</h3><div class="list" style="margin-top:6px">';
+  if(flags.length){flags.slice(0,5).forEach(function(c){
+    var why=[];if(c.checked===false)why.push('check skipped');if(c.recipeProblem)why.push('recipe problem');if(c.brewingWell===false)why.push('not brewing well');
+    h+='<div class="item"><div class="row between"><span class="t">'+esc(bname(c.baristaId))+' <span class="muted" style="font-weight:400">· '+esc(c.coffee||'Coffee')+'</span></span><span class="small muted mono">'+esc(c.date)+'</span></div><div class="row">'+why.map(function(w){return pill(w,'bad')}).join('')+'</div>'+(c.fix?'<div class="small">'+esc(c.fix)+'</div>':'')+'</div>';
+  })}else{h+='<div class="item muted">No follow-ups in the last 7 days.</div>'}
+  h+='</div></div>';
+  h+='<div class="card"><h3>No coffee check logged today</h3><div class="row" style="margin-top:10px">'
+   +(missing.length?missing.map(function(b){return pill(b.name||'Unnamed','warn')}).join(''):pill('Everyone has logged one','good'))
+   +'</div><p class="small muted" style="margin-top:10px">Checks are logged on the Coffee checks tab. Someone with no entry may have forgotten to log, so ask.</p></div>';
+  h+='</div>';
+  /* responsibilities ready */
+  var open=[];
+  RESP.forEach(function(r){
+    var as=S.assign[r.k];var hasOwner=as&&as.ownerId&&bget(as.ownerId);
+    var rd=S.baristas.filter(function(b){return respStatus(r,b)==='ready'});
+    if(!hasOwner&&rd.length)open.push({r:r,rd:rd});
+  });
+  h+='<div class="grid g-2"><div class="card"><h3>Ready to take something on</h3><div class="list" style="margin-top:6px">';
+  if(open.length){open.slice(0,6).forEach(function(o){h+='<div class="item"><span class="t">'+esc(o.r.n)+'</span><div class="row"><span class="small muted">No owner. Ready:</span>'+o.rd.sort(byName).map(function(b){return pill(b.name,'good')}).join('')+'</div></div>'})}
+  else{h+='<div class="item muted">Nothing unowned has a ready person right now. Rate skills on the Team tab to see matches.</div>'}
+  h+='</div></div>';
+  /* thin coverage */
+  var thin=[];
+  if(S.baristas.length>=2){SKILLS.forEach(function(s){var n=S.baristas.filter(function(b){return (skillVal(b,s.k)||0)>=2}).length;if(n<2)thin.push({s:s,n:n})})}
+  h+='<div class="card"><h3>Thin coverage</h3><p class="small muted">Skills where fewer than two people work independently.</p><div class="row" style="margin-top:10px">'
+   +(thin.length?thin.map(function(t){return pill(t.s.n+' ('+t.n+')',t.n===0?'bad':'warn')}).join(''):pill('Every skill has at least two people','good'))+'</div></div></div>';
+  /* leadership */
+  if(cohort.length){
+    h+='<div class="card"><h3>Leadership group</h3><div class="list" style="margin-top:6px">';
+    cohort.sort(byName).forEach(function(b){
+      var rd=S.admin?readiness(b):null;
+      h+='<button class="item" style="text-align:left;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer" data-act="open-b" data-id="'+b.id+'"><div class="row between"><span class="t">'+esc(b.name)+sampleTag(b)+'</span>'+(rd?pill(rd.t,rd.k):'<span class="small muted mono">skills '+n1(techAvg(b))+'</span>')+'</div>'+(b.cohortFocus?'<span class="small muted">Focus: '+esc(b.cohortFocus)+'</span>':'')+'</button>';
+    });
+    h+='</div></div>';
+  }
+  var hasSample=S.baristas.some(function(b){return b.sample});
+  if(hasSample&&S.admin)h+='<div class="card flat row between"><span class="small">The sample team is still loaded. Remove it before you add real people.</span><button class="btn ghost sm" data-act="sample-clear">Remove sample data</button></div>';
+  el.innerHTML=h;
+}
+
+/* ---------- team ---------- */
+function renderTeam(){
+  var tools=$('#teamTools');
+  tools.innerHTML=S.admin?'<form id="addForm" class="row" autocomplete="off"><input type="text" id="addName" placeholder="Barista name" style="width:170px" aria-label="Barista name"><button class="btn" type="submit">Add barista</button></form>':'';
+  var g=$('#teamGrid');
+  if(!S.baristas.length){g.innerHTML='<div style="grid-column:1/-1">'+emptyTeam()+'</div>';return}
+  g.innerHTML=S.baristas.slice().sort(byName).map(function(b){
+    var t=techAvg(b);var st=checkStats(b.id,daysAgo(29));
+    var ready=RESP.filter(function(r){return respStatus(r,b)==='ready'}).length;
+    return '<button class="person" data-act="open-b" data-id="'+b.id+'"><div class="stack" style="gap:4px"><h3>'+esc(b.name||'Unnamed')+sampleTag(b)+'</h3><div class="row small muted"><span>'+esc(b.role||'Barista')+'</span>'+(b.location?'<span>· '+esc(b.location)+'</span>':'')+(b.inCohort?pill('Leadership group','acc'):'')+'</div></div>'
+      +strip(b)
+      +'<div class="kv"><div><span class="label">Skill avg</span><b>'+n1(t)+'</b></div><div><span class="label">Experts</span><b>'+(ratedVals(b).length?expertCount(b):'—')+'</b></div><div><span class="label">Gaps</span><b>'+(ratedVals(b).length?gapCount(b):'—')+'</b></div><div><span class="label">Can own</span><b>'+ready+'</b></div><div><span class="label">Checks done</span><b>'+pct(st.pct)+'</b></div></div></button>';
+  }).join('');
+}
+
+/* ---------- responsibilities ---------- */
+function renderRoles(){
+  var el=$('#rolesBody');
+  if(!S.baristas.length){el.innerHTML='<div style="grid-column:1/-1">'+emptyTeam()+'</div>';return}
+  el.innerHTML=RESP.map(function(r){
+    var rd=[],al=[];S.baristas.slice().sort(byName).forEach(function(b){var s=respStatus(r,b);if(s==='ready')rd.push(b);else if(s==='almost')al.push(b)});
+    var as=S.assign[r.k]||{};
+    function opts(sel){return '<option value="">Unassigned</option>'+S.baristas.slice().sort(byName).map(function(b){var tag=respStatus(r,b)==='ready'?' (ready)':'';return '<option value="'+b.id+'"'+(sel===b.id?' selected':'')+'>'+esc(b.name)+tag+'</option>'}).join('')}
+    return '<div class="card stack"><h3>'+esc(r.n)+'</h3><div class="label">'+esc(r.c)+'</div>'
+      +'<div class="small muted">Needs level '+r.m+'+ in: '+r.s.map(function(k){return esc(SK[k].n)}).join(', ')+'</div>'
+      +'<div class="row"><span class="small muted" style="width:54px">Ready</span>'+(rd.length?rd.map(function(b){return pill(b.name,'good')}).join(''):'<span class="small muted">No one yet</span>')+'</div>'
+      +(al.length?'<div class="row"><span class="small muted" style="width:54px">Almost</span>'+al.map(function(b){return pill(b.name,'warn')}).join('')+'</div>':'')
+      +'<div class="form"><label class="field"><span>Owner</span><select data-assign="'+r.k+'" data-f="ownerId"'+(S.admin?'':' disabled')+'>'+opts(as.ownerId)+'</select></label>'
+      +'<label class="field"><span>Backup</span><select data-assign="'+r.k+'" data-f="backupId"'+(S.admin?'':' disabled')+'>'+opts(as.backupId)+'</select></label></div></div>';
+  }).join('');
+}
+
+/* ---------- coffee checks ---------- */
+function fillSelect(sel,items,keep){
+  var cur=keep!=null?keep:sel.value;
+  sel.innerHTML=items.map(function(i){return '<option value="'+esc(i.v)+'">'+esc(i.t)+'</option>'}).join('');
+  if(cur&&items.some(function(i){return i.v===cur}))sel.value=cur;
+}
+function renderChecks(){
+  var who=$('#ckWho');
+  var items=S.baristas.slice().sort(byName).map(function(b){return {v:b.id,t:b.name}});
+  var last='';try{last=localStorage.getItem('crew.ckWho')||''}catch(e){}
+  fillSelect(who,items.length?items:[{v:'',t:'Add a barista first'}],who.value||last);
+  var coffees={};S.checks.forEach(function(c){if(c.coffee)coffees[c.coffee]=1});
+  $('#coffeeList').innerHTML=Object.keys(coffees).map(function(c){return '<option value="'+esc(c)+'">'}).join('');
+  /* summary */
+  var from=daysAgo(29);
+  var sm=$('#ckSummary');
+  if(!S.baristas.length){sm.innerHTML='<div class="item muted">Add baristas to see their check history.</div>'}
+  else{
+    sm.innerHTML=S.baristas.slice().sort(byName).map(function(b){
+      var st=checkStats(b.id,from);
+      return '<div class="item"><div class="row between"><span class="t">'+esc(b.name)+'</span><span class="small mono muted">'+st.n+' logged · '+st.flags+' follow-up'+(st.flags===1?'':'s')+' · '+pct(st.pct)+' done</span></div><div class="bar"><i style="width:'+(st.pct==null?0:Math.round(st.pct*100))+'%"></i></div></div>';
+    }).join('');
+  }
+  /* list */
+  var list=S.checks.slice().sort(function(a,b){return (b.date+String(b.createdAt||0).padStart(15,'0'))>(a.date+String(a.createdAt||0).padStart(15,'0'))?1:-1});
+  if(S.ckFilter==='flag')list=list.filter(isFlag);
+  var el=$('#ckList');
+  if(!list.length){el.innerHTML='<div class="item muted">'+(S.ckFilter==='flag'?'No follow-ups. Everything logged looks fine.':'No checks logged yet. The first one will show here.')+'</div>';return}
+  el.innerHTML=list.slice(0,40).map(function(c){
+    var r=ratio(c.dose,c.yield);
+    var pills=[];
+    pills.push(c.checked?pill('Checked','good'):pill('Check skipped','bad'));
+    if(c.recipeProblem)pills.push(pill('Recipe problem','bad'));
+    if(c.brewingWell===false)pills.push(pill('Not brewing well','bad'));
+    if(!isFlag(c))pills.push(pill('OK','good'));
+    return '<div class="item"><div class="row between"><span class="t">'+esc(bname(c.baristaId))+' <span class="muted" style="font-weight:400">· '+esc(c.coffee||'Coffee')+sampleTag(c)+'</span></span><span class="small muted mono">'+esc(c.date)+' · '+esc(c.shift||'')+'</span></div>'
+      +'<div class="row">'+pills.join('')+(r?'<span class="ratio">'+(c.dose)+'g → '+(c.yield)+'g = '+r+(c.time?' in '+c.time+'s':'')+'</span>':'')+'</div>'
+      +(c.taste?'<div class="small"><span class="muted">Taste:</span> '+esc(c.taste)+'</div>':'')
+      +(c.fix?'<div class="small"><span class="muted">Fix:</span> '+esc(c.fix)+'</div>':'')
+      +(S.admin?'<div><button class="btn danger sm" data-act="del" data-coll="checks" data-id="'+c.id+'">'+(S.confirm==='checks/'+c.id?'Confirm delete':'Delete')+'</button></div>':'')+'</div>';
+  }).join('');
+}
+
+/* ---------- ideas ---------- */
+function renderIdeas(){
+  var items=S.baristas.slice().sort(byName).map(function(b){return {v:b.id,t:b.name}});
+  var who=$('#idWho');
+  var last='';try{last=localStorage.getItem('crew.idWho')||''}catch(e){}
+  fillSelect(who,items.length?items:[{v:'',t:'Add a barista first'}],who.value||last);
+  var area=$('#idArea');if(!area.options.length)fillSelect(area,AREAS.map(function(a){return {v:a,t:a}}));
+  var el=$('#ideaList');
+  var list=S.ideas.slice().sort(function(a,b){var pa=ideaPriority(a).r,pb=ideaPriority(b).r;if(a.status==='Rejected')pa+=10;if(b.status==='Rejected')pb+=10;return pa-pb||((b.createdAt||0)-(a.createdAt||0))});
+  if(!list.length){el.innerHTML='<div class="empty"><h3>No ideas yet</h3><p>When someone spots something that slows the bar down or hurts the coffee, add it above. The best ideas rise to the top.</p></div>';return}
+  el.innerHTML=list.map(function(i){
+    var p=ideaPriority(i);
+    return '<div class="item"><div class="row between"><span class="t">'+esc(i.area||'Other')+sampleTag(i)+'</span><span class="row">'+pill(p.t,p.k)+pill(i.status||'Idea',i.status==='Adopted'?'good':'')+'</span></div>'
+      +'<div class="small"><span class="muted">Problem:</span> '+esc(i.problem)+'</div><div class="small"><span class="muted">Change:</span> '+esc(i.change)+'</div>'
+      +'<div class="small muted">'+esc(bname(i.byId))+' · '+esc(i.date||'')+' · Impact '+esc(i.impact)+' · Effort '+esc(i.effort)+'</div>'
+      +(S.admin?'<div class="form"><label class="field"><span>Status</span><select data-idea="'+i.id+'" data-f="status">'+STATUSES.map(function(s){return '<option'+((i.status||'Idea')===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></label><label class="field"><span>Owner</span><input type="text" data-idea="'+i.id+'" data-f="owner" value="'+esc(i.owner||'')+'"></label><label class="field wide"><span>Result and what we learned</span><input type="text" data-idea="'+i.id+'" data-f="result" value="'+esc(i.result||'')+'"></label></div><div><button class="btn danger sm" data-act="del" data-coll="ideas" data-id="'+i.id+'">'+(S.confirm==='ideas/'+i.id?'Confirm delete':'Delete')+'</button></div>'
+         :((i.owner?'<div class="small"><span class="muted">Owner:</span> '+esc(i.owner)+'</div>':'')+(i.result?'<div class="small"><span class="muted">Result:</span> '+esc(i.result)+'</div>':'')))
+      +'</div>';
+  }).join('');
+}
+
+/* ---------- leadership ---------- */
+function renderLead(){
+  var r=$('#leadRoster');
+  var cohort=S.baristas.filter(function(b){return b.inCohort}).sort(byName);
+  var others=S.baristas.filter(function(b){return !b.inCohort}).sort(byName);
+  var h='';
+  if(!S.baristas.length){r.innerHTML=emptyTeam()}
+  else{
+    h+='<div class="card stack"><div class="row between"><h3>Group members</h3>'
+      +(S.admin&&others.length?'<div class="row"><select id="cohortAdd" aria-label="Add to leadership group" style="width:180px"><option value="">Add someone…</option>'+others.map(function(b){return '<option value="'+b.id+'">'+esc(b.name)+'</option>'}).join('')+'</select><button class="btn sm" data-act="cohort-add">Add</button></div>':'')+'</div>';
+    if(!cohort.length){h+='<p class="muted">No one is in the group yet. Pick three to five people you want to develop, ideally working the same location, so they see how the place really runs.</p>'}
+    else{
+      h+='<div class="grid g-auto">'+cohort.map(function(b){
+        var st=checkStats(b.id,daysAgo(29));var mine=S.ideas.filter(function(i){return i.byId===b.id});var ad=mine.filter(function(i){return i.status==='Adopted'}).length;
+        var rd=S.admin?readiness(b):null,ls=S.admin?leadScore(b.id):null,ov=S.admin?overall(b):null;
+        return '<button class="person" data-act="open-b" data-id="'+b.id+'"><div class="stack" style="gap:4px"><h3>'+esc(b.name)+sampleTag(b)+'</h3><div class="small muted">'+(b.cohortFocus?'Focus: '+esc(b.cohortFocus):'No focus area set')+(b.mentor?' · Mentor: '+esc(b.mentor):'')+(b.location?' · '+esc(b.location):'')+'</div></div>'
+          +'<div class="kv"><div><span class="label">Skills</span><b>'+n1(techAvg(b))+'</b></div><div><span class="label">Checks done</span><b>'+pct(st.pct)+'</b></div><div><span class="label">Ideas</span><b>'+mine.length+'</b></div><div><span class="label">Adopted</span><b>'+ad+'</b></div>'+(S.admin?'<div><span class="label">Leadership</span><b>'+n1(ls)+'</b></div><div><span class="label">Overall</span><b>'+n1(ov)+'</b></div>':'')+'</div>'
+          +(S.admin?(rd?pill(rd.t,rd.k):'<span class="small muted">Rate leadership to see readiness</span>'):'')+'</button>';
+      }).join('')+'</div>';
+      if(!S.admin)h+='<p class="small muted">Leadership ratings are visible to managers only.</p>';
+    }
+    h+='</div>';
+    r.innerHTML=h;
+  }
+  /* plan */
+  $('#leadPlan').innerHTML=PLAN.map(function(p,i){
+    var st=(S.plan['w'+(i+1)]||{}).status||'';
+    return '<div class="item"><div class="row between"><span class="t"><span class="mono muted">Week '+(i+1)+'</span> · '+esc(p[0])+'</span>'+(S.admin?'<select data-plan="w'+(i+1)+'" style="width:140px" aria-label="Week '+(i+1)+' status"><option value=""'+(st===''?' selected':'')+'>Not started</option><option value="doing"'+(st==='doing'?' selected':'')+'>In progress</option><option value="done"'+(st==='done'?' selected':'')+'>Done</option></select>':pill(st==='done'?'Done':st==='doing'?'In progress':'Not started',st==='done'?'good':st==='doing'?'warn':''))+'</div><div class="small">'+esc(p[1])+'</div><div class="small muted">Brings back: '+esc(p[2])+'</div></div>';
+  }).join('');
+  /* scoring */
+  var sc=$('#leadScoring');
+  if(!S.admin){sc.hidden=true;return}
+  sc.hidden=false;var c=cfg();
+  sc.innerHTML='<h3>Scoring</h3><p class="muted small" style="margin:2px 0 10px">How leadership ratings and technical skills combine into the readiness label. These are starting points. Weight each area from 1 to 5.</p>'
+   +'<div class="form"><label class="field"><span>Technical share of overall score (%)</span><input type="number" min="0" max="100" step="5" data-cfg="techShare" value="'+Math.round(c.techShare*100)+'"></label>'
+   +'<label class="field"><span>Ready at overall score of</span><input type="number" min="0" max="3" step="0.1" data-cfg="ready" value="'+c.ready+'"></label>'
+   +'<label class="field"><span>Developing at overall score of</span><input type="number" min="0" max="3" step="0.1" data-cfg="dev" value="'+c.dev+'"></label></div>'
+   +'<div class="form" style="margin-top:12px">'+COMPS.map(function(k){return '<label class="field"><span>'+esc(k.n)+'</span><input type="number" min="1" max="5" step="1" data-cfg-w="'+k.k+'" value="'+weight(k.k)+'"></label>'}).join('')+'</div>';
+}
+
+/* ---------- drawer ---------- */
+function renderDrawer(){
+  var m=$('#drawerMount');
+  if(!S.openId){m.innerHTML='';return}
+  var b=bget(S.openId);
+  if(!b){S.openId=null;m.innerHTML='';return}
+  var a=document.activeElement;
+  if(a&&m.contains(a)&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))return;
+  var old=$('.drawer-body',m);var sy=old?old.scrollTop:0;
+  var dis=S.admin?'':' disabled';
+  function f(label,field,type,wide){return '<label class="field'+(wide?' wide':'')+'"><span>'+label+'</span>'+(type==='ta'?'<textarea data-f="'+field+'" rows="2"'+dis+'>'+esc(b[field]||'')+'</textarea>':type==='role'?'<select data-f="'+field+'"'+dis+'>'+ROLES.map(function(r){return '<option'+((b.role||'Barista')===r?' selected':'')+'>'+r+'</option>'}).join('')+'</select>':'<input type="'+type+'" data-f="'+field+'" value="'+esc(b[field]||'')+'"'+dis+'>')+'</label>'}
+  var t=techAvg(b),st=checkStats(b.id,daysAgo(29));
+  var h='<div class="scrim" data-act="close-drawer"></div><aside class="drawer" role="dialog" aria-label="Barista details"><div class="drawer-head"><input type="text" data-f="name" value="'+esc(b.name||'')+'" aria-label="Name"'+dis+'><button class="btn ghost sm" data-act="close-drawer">Close</button></div><div class="drawer-body">';
+  h+='<div class="stack"><div class="kv"><div><span class="label">Skill avg</span><b>'+n1(t)+'</b></div><div><span class="label">Experts</span><b>'+(ratedVals(b).length?expertCount(b):'—')+'</b></div><div><span class="label">Gaps</span><b>'+(ratedVals(b).length?gapCount(b):'—')+'</b></div><div><span class="label">Checks done</span><b>'+pct(st.pct)+'</b></div></div>'+strip(b)+'</div>';
+  h+='<div><h3>Profile</h3><div class="form">'+f('Role','role','role')+f('Location','location','text')+f('Start date','startDate','date')+f('Availability','availability','text')+f('Next check-in','nextCheckin','date')+f('Strengths','strengths','ta',true)+f('Areas to grow','grow','ta',true)+f('Goals','goals','ta',true)+f('Notes','notes','ta',true)+'</div></div>';
+  h+='<div><h3>Skills</h3><div class="legend" style="margin-bottom:8px"><span>0 Not trained</span><span>1 Learning</span><span>2 Independent</span><span>3 Can train others</span></div>';
+  var grp='';
+  SKILLS.forEach(function(s){
+    if(s.g!==grp){grp=s.g;h+='<div class="label" style="margin:12px 0 2px">'+esc(grp)+'</div>'}
+    h+='<div class="skillrow"><span>'+esc(s.n)+'</span>'+seg('skill',s.k,skillVal(b,s.k),!S.admin,s.n)+'</div>';
+  });
+  h+='</div>';
+  var ok=RESP.filter(function(r){return respStatus(r,b)==='ready'}),al=RESP.filter(function(r){return respStatus(r,b)==='almost'});
+  h+='<div><h3>Can take on</h3><div class="row">'+(ok.length?ok.map(function(r){return pill(r.n,'good')}).join(''):'<span class="muted small">Nothing yet. Rate their skills above.</span>')+'</div>'+(al.length?'<div class="small muted" style="margin:8px 0 4px">One step away</div><div class="row">'+al.map(function(r){return pill(r.n,'warn')}).join('')+'</div>':'')+'</div>';
+  h+='<div><h3>Leadership group</h3><label class="row" style="margin-bottom:10px"><input type="checkbox" data-f="inCohort"'+(b.inCohort?' checked':'')+dis+'> <span>Member of the leadership group</span></label>';
+  if(b.inCohort){
+    h+='<div class="form"><label class="field"><span>Mentor</span><input type="text" data-f="mentor" value="'+esc(b.mentor||'')+'"'+dis+'></label><label class="field"><span>Focus area</span><select data-f="cohortFocus"'+dis+'><option value="">None</option>'+AREAS.map(function(x){return '<option'+(b.cohortFocus===x?' selected':'')+'>'+x+'</option>'}).join('')+'</select></label></div>';
+    if(S.admin){
+      var sc=S.score[b.id]||{},rd=readiness(b);
+      h+='<h3 style="margin-top:16px">Head barista scorecard</h3><div class="legend" style="margin-bottom:6px"><span>0 Not shown yet</span><span>1 Sometimes</span><span>2 Consistently</span><span>3 Clear strength others learn from</span></div>';
+      COMPS.forEach(function(c){h+='<div class="skillrow"><span>'+esc(c.n)+'</span>'+seg('comp',c.k,typeof (sc.ratings||{})[c.k]==='number'?sc.ratings[c.k]:null,false,c.n)+'</div>'});
+      h+='<div class="row" style="margin-top:12px">'+pill('Leadership '+n1(leadScore(b.id)),'')+pill('Skills '+n1(t),'')+pill('Overall '+n1(overall(b)),'acc')+(rd?pill(rd.t,rd.k):'')+'</div><p class="small muted" style="margin-top:8px">Rate with a mentor, and note a real example for each rating in the profile notes. Ready also requires a leadership score of at least 2.</p>';
+    }
+  }
+  h+='</div>';
+  if(S.admin)h+='<div><button class="btn danger" data-act="del-b" data-id="'+b.id+'">'+(S.confirm==='b/'+b.id?'Confirm: remove '+esc(b.name||'barista')+' and their ratings':'Remove barista')+'</button></div>';
+  h+='</div></aside>';
+  m.innerHTML=h;
+  var nb=$('.drawer-body',m);if(nb)nb.scrollTop=sy;
+}
+
+/* ---------- notice + header ---------- */
+function renderHeader(){
+  $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm" data-act="signout">Sign out</button>':'';
+  var pend=S.people.filter(function(p){return !p.approved}).length;
+  var counts=S.db?{team:S.baristas.length,roles:RESP.length,checks:S.checks.length,lead:S.baristas.filter(function(b){return b.inCohort}).length,ideas:S.ideas.length,access:S.admin?pend:null}:{};
+  $$('#nav button').forEach(function(b){var t=b.dataset.tab;var c=counts[t];b.hidden=(t==='access'&&!S.admin);b.innerHTML=esc(b.dataset.label)+(c!=null?'<span class="n">('+c+')</span>':'')});
+}
+function renderAll(){
+  renderHeader();
+  var t=S.tab;
+  if(t==='overview')renderOverview();else if(t==='team')renderTeam();else if(t==='roles')renderRoles();else if(t==='checks')renderChecks();else if(t==='lead')renderLead();else if(t==='ideas')renderIdeas();else if(t==='access')renderAccess();
+  renderDrawer();
+}
+var raf=0;
+function schedule(){if(raf)return;raf=requestAnimationFrame(function(){raf=0;
+  /* skip a full rebuild of a tab while someone is typing inside it */
+  var a=document.activeElement;var tabEl=$('#tab-'+S.tab);
+  if(a&&tabEl&&tabEl.contains(a)&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&(a.matches('[data-idea],[data-cfg],[data-cfg-w],#addName'))){renderHeader();renderDrawer();return}
+  renderAll()})}
+function setTab(t){
+  S.tab=t;S.confirm=null;if(t==='access'&&S.admin)loadPeople();
+  $$('#nav button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===t?'true':'false')});
+  $$('section.tab').forEach(function(s){s.hidden=s.id!=='tab-'+t});
+  renderAll();window.scrollTo(0,0);
+}
+
+/* ---------- writes ---------- */
+function upsert(path,data){
+  return queue(path,function(){var ref=db.doc(path);return ref.update(data).catch(function(e){if(e&&e.code==='invalid_argument'){return ref.set(data)}throw e})});
+}
+function addBarista(name){
+  return db.collection('baristas').add({name:name,role:'Barista',skills:{},createdAt:Date.now()}).then(function(ref){S.openId=ref.id;renderAll()}).catch(fail);
+}
+function setField(id,field,value){
+  var d={};d[field]=value;
+  return queue('baristas/'+id,function(){return db.doc('baristas/'+id).update(d)});
+}
+function rate(kind,key,v){
+  var id=S.openId;if(!id)return;
+  if(kind==='skill'){var cur=skillVal(bget(id),key);var nv=(cur===v)?null:v;var sk={};sk[key]=nv;queue('baristas/'+id,function(){return db.doc('baristas/'+id).update({skills:sk})});}
+  else{var sc=S.score[id];var cur2=sc&&sc.ratings?sc.ratings[key]:null;var nv2=(cur2===v)?null:v;var rr={};rr[key]=nv2;var b=bget(id);
+    var path='scorecards/'+id;
+    if(sc){queue(path,function(){return db.doc(path).update({ratings:rr,date:today()})})}
+    else{var body={ratings:rr,date:today()};if(b&&b.sample)body.sample=true;queue(path,function(){return db.doc(path).set(body)})}
+  }
+}
+function delDoc(path){return db.doc(path).delete().catch(fail)}
+
+/* ---------- sample data ---------- */
+var SAMPLE=[
+ {n:'Maya',r:'Senior barista',v:[3,3,2,3,3,3,3,2,3,3,2,2,3,2],c:true,f:'Workflow & bar layout',m:'Head barista'},
+ {n:'Dario',r:'Barista',v:[2,3,2,1,2,2,3,2,2,1,1,0,2,0]},
+ {n:'Priya',r:'Barista',v:[3,2,3,2,2,3,2,1,3,2,2,3,2,1],c:true,f:'Ordering & inventory',m:'Head barista'},
+ {n:'Tom',r:'Trainee',v:[1,1,2,1,1,2,2,1,0,0,0,0,1,0]}
+];
+function loadSample(){
+  toast('Loading sample team…');
+  var ids=[],chain=Promise.resolve();
+  SAMPLE.forEach(function(p,i){chain=chain.then(function(){
+    var skills={};SKILLS.forEach(function(s,j){skills[s.k]=p.v[j]});
+    var ref=db.collection('baristas').doc();ids[i]=ref.id;
+    return ref.set({name:p.n,role:p.r,skills:skills,inCohort:!!p.c,cohortFocus:p.f||'',mentor:p.m||'',location:'Main shop',createdAt:Date.now(),sample:true});
+  })});
+  var checks=[[0,0,'House espresso',1,0,1,18,36,27,'Balanced, sweet',''],[1,0,'House espresso',1,1,0,18,36,19,'Sour and thin, ran fast','Ground finer by 2 steps, re-pulled'],[2,1,'Single origin',1,0,1,18,40,28,'Fruity, clean',''],[3,1,'House espresso',0,0,1,0,0,0,'','Forgot, will check at close'],[0,2,'Decaf',1,0,1,17,34,26,'Fine','']];
+  checks.forEach(function(c,i){chain=chain.then(function(){return db.collection('checks').add({date:daysAgo(c[1]),shift:'Opening',baristaId:ids[c[0]],coffee:c[2],checked:!!c[3],recipeProblem:!!c[4],brewingWell:!!c[5],dose:c[6]||null,yield:c[7]||null,time:c[8]||null,taste:c[9],fix:c[10],createdAt:Date.now()+i,sample:true})})});
+  chain=chain.then(function(){return db.collection('ideas').add({date:daysAgo(2),byId:ids[0],area:'Workflow & bar layout',problem:'Milk fridge is far from the machine, six steps per latte in the rush',change:'Move the fridge next to the steam wand and mark a syrup station',impact:'High',effort:'Low',status:'Pilot',owner:'Head barista',result:'',createdAt:Date.now(),sample:true})});
+  chain=chain.then(function(){return db.collection('ideas').add({date:daysAgo(4),byId:ids[2],area:'Ordering & inventory',problem:'We run out of oat milk on weekends',change:'Order on Thursday with a par level on the shelf',impact:'Medium',effort:'Low',status:'Idea',owner:'',result:'',createdAt:Date.now()+1,sample:true})});
+  if(S.admin){[[0,[3,3,2,3,3,3,2,3,2,3]],[2,[2,2,3,2,1,3,2,2,3,2]]].forEach(function(s){chain=chain.then(function(){var r={};COMPS.forEach(function(c,j){r[c.k]=s[1][j]});return db.doc('scorecards/'+ids[s[0]]).set({ratings:r,date:today(),sample:true})})})}
+  chain.then(function(){toast('Sample team loaded. Remove it any time from the Today tab.')}).catch(fail);
+}
+function clearSample(){
+  var jobs=[];
+  S.baristas.filter(function(b){return b.sample}).forEach(function(b){jobs.push('baristas/'+b.id);if(S.score[b.id])jobs.push('scorecards/'+b.id)});
+  S.checks.filter(function(c){return c.sample}).forEach(function(c){jobs.push('checks/'+c.id)});
+  S.ideas.filter(function(c){return c.sample}).forEach(function(c){jobs.push('ideas/'+c.id)});
+  var chain=Promise.resolve();
+  jobs.forEach(function(p){chain=chain.then(function(){return db.doc(p).delete()})});
+  chain.then(function(){toast('Sample data removed.')}).catch(fail);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');if(!t)return;
+  var act=t.dataset.act;
+  if(act==='tab'){setTab(t.dataset.tab)}
+  else if(act==='open-b'){S.openId=t.dataset.id;S.confirm=null;renderDrawer()}
+  else if(act==='close-drawer'){S.openId=null;S.confirm=null;renderDrawer()}
+  else if(act==='rate'){rate(t.dataset.kind,t.dataset.key,parseInt(t.dataset.v,10))}
+  else if(act==='yn'){var q=t.dataset.q;S.yn[q]=t.dataset.v==='1';syncYn()}
+  else if(act==='ckfilter'){S.ckFilter=t.dataset.v;$$('[data-act=ckfilter]').forEach(function(c){c.setAttribute('aria-pressed',c.dataset.v===S.ckFilter?'true':'false')});renderChecks()}
+  else if(act==='signout'){sb.auth.signOut().then(function(){location.reload()},function(){location.reload()})}
+  else if(act==='auth-mode'){showAuth(t.dataset.mode)}
+  else if(act==='auth-refresh'){loadProfile()}
+  else if(act==='person-approve'){sb.from('profiles').update({approved:t.dataset.v==='1'}).eq('id',t.dataset.id).then(function(r){if(r.error)toast('Could not update that person.');else{toast(t.dataset.v==='1'?'Approved':'Access removed');loadPeople()}})}
+  else if(act==='sample-load'){loadSample()}
+  else if(act==='sample-clear'){clearSample()}
+  else if(act==='goto-add'){setTab('team');setTimeout(function(){var i=$('#addName');if(i)i.focus()},0)}
+  else if(act==='cohort-add'){var sel=$('#cohortAdd');if(sel&&sel.value)setField(sel.value,'inCohort',true).catch(fail)}
+  else if(act==='del'){var key=t.dataset.coll+'/'+t.dataset.id;if(S.confirm===key){S.confirm=null;delDoc(key)}else{S.confirm=key;renderAll()}}
+  else if(act==='del-b'){var k='b/'+t.dataset.id;if(S.confirm===k){S.confirm=null;var id=t.dataset.id;S.openId=null;delDoc('baristas/'+id).then(function(){if(S.score[id])delDoc('scorecards/'+id)})}else{S.confirm=k;S.drawerForce=true;renderDrawer()}}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;if(!db)return;
+  if(t.dataset.person){sb.from('profiles').update({role:t.value}).eq('id',t.dataset.person).then(function(r){if(r.error)toast('Could not change that role.');else{toast('Role updated');loadPeople()}});return}
+  if(t.dataset.f&&t.closest('.drawer')){
+    var id=S.openId;if(!id)return;
+    var v=t.type==='checkbox'?t.checked:t.value;
+    if(t.dataset.f==='name'&&!String(v).trim()){toast('A name is needed.');renderDrawer();return}
+    setField(id,t.dataset.f,v).catch(fail);return;
+  }
+  if(t.dataset.assign){var o={};o[t.dataset.f]=t.value||null;upsert('assign/'+t.dataset.assign,o).catch(fail);return}
+  if(t.dataset.idea){var d={};d[t.dataset.f]=t.value;queue('ideas/'+t.dataset.idea,function(){return db.doc('ideas/'+t.dataset.idea).update(d)});return}
+  if(t.dataset.plan){upsert('plan/'+t.dataset.plan,{status:t.value}).catch(fail);return}
+  if(t.dataset.cfg){var n=parseFloat(t.value);if(isNaN(n))return;if(t.dataset.cfg==='techShare')n=Math.max(0,Math.min(100,n))/100;upsert('settings/config',(function(){var x={};x[t.dataset.cfg]=n;return x})()).catch(fail);return}
+  if(t.dataset.cfgW){var w=parseFloat(t.value);if(isNaN(w))return;var ws={};ws[t.dataset.cfgW]=Math.max(1,Math.min(5,w));upsert('settings/config',{weights:ws}).catch(fail);return}
+  if(t.id==='ckWho'){try{localStorage.setItem('crew.ckWho',t.value)}catch(x){}}
+  if(t.id==='idWho'){try{localStorage.setItem('crew.idWho',t.value)}catch(x){}}
+});
+document.addEventListener('input',function(e){
+  if(e.target.id==='ckDose'||e.target.id==='ckYield'){var r=ratio($('#ckDose').value,$('#ckYield').value);$('#ckRatio').textContent=r||'—'}
+});
+document.addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target;if(f.id==='authForm'){doAuth();return}if(!db)return;
+  if(f.id==='addForm'){var i=$('#addName');var n=i.value.trim();if(!n){i.focus();return}i.value='';addBarista(n)}
+  else if(f.id==='checkForm'){
+    var who=$('#ckWho').value;var msg=$('#ckMsg');
+    if(!who){msg.textContent='Add a barista first.';return}
+    if(S.yn.checked==null||S.yn.recipe==null||S.yn.brew==null){msg.textContent='Answer all three questions.';return}
+    var num=function(id){var v=parseFloat($(id).value);return isNaN(v)?null:v};
+    var doc={date:$('#ckDate').value||today(),shift:$('#ckShift').value,baristaId:who,coffee:$('#ckCoffee').value.trim(),checked:S.yn.checked,recipeProblem:S.yn.recipe,brewingWell:S.yn.brew,dose:num('#ckDose'),yield:num('#ckYield'),time:num('#ckTime'),taste:$('#ckTaste').value.trim(),fix:$('#ckFix').value.trim(),createdAt:Date.now()};
+    var flag=isFlag(doc);
+    db.collection('checks').add(doc).then(function(){
+      ['#ckCoffee','#ckDose','#ckYield','#ckTime','#ckTaste','#ckFix'].forEach(function(s){$(s).value=''});
+      $('#ckRatio').textContent='—';S.yn={checked:null,recipe:null,brew:null};syncYn();
+      msg.textContent=flag?'Logged and flagged for follow-up.':'Logged. All good.';toast(flag?'Check logged and flagged':'Check logged');
+    }).catch(fail);
+  }
+  else if(f.id==='ideaForm'){
+    var by=$('#idWho').value,p=$('#idProblem').value.trim(),c=$('#idChange').value.trim(),m=$('#idMsg');
+    if(!by){m.textContent='Add a barista first.';return}
+    if(!p||!c){m.textContent='Describe the problem and the change.';return}
+    db.collection('ideas').add({date:today(),byId:by,area:$('#idArea').value,problem:p,change:c,impact:$('#idImpact').value,effort:$('#idEffort').value,status:'Idea',owner:'',result:'',createdAt:Date.now()}).then(function(){
+      $('#idProblem').value='';$('#idChange').value='';m.textContent='';toast('Idea added');
+    }).catch(fail);
+  }
+});
+function syncYn(){
+  $$('.yn').forEach(function(g){
+    var q=g.dataset.q,val=S.yn[q];
+    $$('button',g).forEach(function(b){
+      var yes=b.dataset.v==='1';b.className='';
+      if(val!=null&&val===yes){
+        var bad=(q==='checked'&&!yes)||(q==='recipe'&&yes)||(q==='brew'&&!yes);
+        b.className=bad?'no':'ok';
+      }
+      b.setAttribute('aria-pressed',val!=null&&val===yes?'true':'false');
+    });
+  });
+}
+
+/* ---------- boot ---------- */
+function sub(path,key){
+  db.collection(path).onSnapshot(function(snap){
+    S[key]=snap.docs.map(function(d){var o=Object.assign({},d.data());o.id=d.id;return o});schedule();
+  },function(e){console.warn(path,e)});
+}
+function subMap(path,key){
+  db.collection(path).onSnapshot(function(snap){
+    var m={};snap.docs.forEach(function(d){m[d.id]=d.data()});S[key]=m;schedule();
+  },function(e){console.warn(path,e)});
+}
+
+function renderAccess(){
+  var el=$('#accessList');
+  var ps=S.people.slice().sort(function(a,b){return (a.approved===b.approved?0:(a.approved?1:-1))||String(a.email).localeCompare(String(b.email))});
+  if(!ps.length){el.innerHTML='<div class="item muted">No one has signed up yet.</div>';return}
+  el.innerHTML=ps.map(function(p){
+    var me=p.id===S.uid;
+    return '<div class="item"><div class="row between"><span class="t">'+esc(p.email||'Unknown')+(me?' <span class="muted" style="font-weight:400">(you)</span>':'')+'</span>'+(p.approved?pill('Approved','good'):pill('Waiting','warn'))+'</div>'
+      +'<div class="row"><select data-person="'+p.id+'" aria-label="Role" style="width:150px"'+(me?' disabled':'')+'><option value="barista"'+(p.role==='barista'?' selected':'')+'>Barista</option><option value="manager"'+(p.role==='manager'?' selected':'')+'>Manager</option></select>'
+      +(me?'':'<button class="btn'+(p.approved?' ghost':'')+' sm" data-act="person-approve" data-id="'+p.id+'" data-v="'+(p.approved?'0':'1')+'">'+(p.approved?'Remove access':'Approve')+'</button>')+'</div></div>';
+  }).join('');
+}
+function loadPeople(){
+  if(!sb||!S.admin)return;
+  sb.from('profiles').select('id,email,role,approved,created_at').then(function(r){if(r.data){S.people=r.data;schedule()}});
+}
+
+/* ---------- sign in ---------- */
+function showAuth(mode,msg,isErr){
+  S.authMode=mode;$('#app').hidden=true;var el=$('#auth');el.hidden=false;
+  if(mode!=='pending'&&pendTimer){clearInterval(pendTimer);pendTimer=null}
+  var word='<h1 class="hero-word"><span>crew<sup>®</sup></span></h1>';
+  var h='<div class="auth-in">'+word;
+  if(mode==='setup'){
+    h+='<div class="stack"><h2>not connected yet</h2><p class="muted">This site needs its database details. Open <code>config.js</code> in the repository, paste in your Supabase project URL and anon key, and save. The setup guide has the exact steps.</p></div>';
+  }else if(mode==='pending'){
+    h+='<div class="stack"><h2>waiting for approval</h2><p class="muted">'+esc(S.email||'Your account')+' is signed in. A manager needs to approve it in the Access tab. This page checks again automatically.</p><div class="links"><button class="btn" data-act="auth-refresh">Check now</button><button class="btn ghost" data-act="signout">Sign out</button></div></div>';
+    if(!pendTimer)pendTimer=setInterval(function(){if(S.authMode==='pending')loadProfile()},12000);
+  }else{
+    var titles={signin:'sign in',signup:'create account',forgot:'reset password',recovery:'new password'};
+    h+='<form class="stack" id="authForm" novalidate><h2>'+titles[mode]+'</h2>';
+    if(mode!=='recovery')h+='<label class="field"><span>Email</span><input type="email" id="authEmail" autocomplete="email" inputmode="email" autocapitalize="none" required></label>';
+    if(mode!=='forgot')h+='<label class="field"><span>'+(mode==='recovery'?'New password':'Password')+'</span><input type="password" id="authPass" autocomplete="'+(mode==='signin'?'current-password':'new-password')+'" minlength="8" required></label>';
+    h+='<div class="msg'+(isErr?' err':'')+'" id="authMsg" role="status">'+esc(msg||(mode==='signup'?'Use at least 8 characters. A manager has to approve your account before you can see anything.':''))+'</div>';
+    h+='<div class="links"><button class="btn" type="submit">'+({signin:'Sign in',signup:'Create account',forgot:'Send reset link',recovery:'Save password'}[mode])+'</button>';
+    if(mode==='signin')h+='<button class="btn ghost" type="button" data-act="auth-mode" data-mode="signup">Create account</button><button class="btn ghost" type="button" data-act="auth-mode" data-mode="forgot">Forgot password</button>';
+    else if(mode!=='recovery')h+='<button class="btn ghost" type="button" data-act="auth-mode" data-mode="signin">Back to sign in</button>';
+    h+='</div></form>';
+  }
+  el.innerHTML=h+'</div>';
+}
+function authMsg(m,err){var e=$('#authMsg');if(e){e.textContent=m;e.className='msg'+(err?' err':'')}}
+function doAuth(){
+  var mode=S.authMode;var em=$('#authEmail'),pw=$('#authPass');
+  var email=em?em.value.trim():'',pass=pw?pw.value:'';
+  if(mode!=='recovery'&&!email){authMsg('Enter your email.',true);return}
+  if(mode!=='forgot'&&pass.length<8){authMsg('Use at least 8 characters for the password.',true);return}
+  authMsg('One moment…');
+  if(mode==='signin'){sb.auth.signInWithPassword({email:email,password:pass}).then(function(r){if(r.error)authMsg(r.error.message,true)})}
+  else if(mode==='signup'){sb.auth.signUp({email:email,password:pass}).then(function(r){if(r.error){authMsg(r.error.message,true);return}if(!r.data.session){authMsg('Check your email for a confirmation link, then sign in.')}})}
+  else if(mode==='forgot'){sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}).then(function(r){authMsg(r.error?r.error.message:'If that email has an account, a reset link is on its way.',!!r.error)})}
+  else if(mode==='recovery'){sb.auth.updateUser({password:pass}).then(function(r){if(r.error){authMsg(r.error.message,true);return}S.recovery=false;sb.auth.getSession().then(function(x){S.profileFor=null;handleSession(x.data.session)})})}
+}
+function handleSession(session){
+  if(!session){if(S.started){location.reload();return}S.profileFor=null;S.uid=null;showAuth('signin');return}
+  if(S.profileFor===session.user.id)return;
+  S.profileFor=session.user.id;S.uid=session.user.id;S.email=session.user.email;loadProfile();
+}
+function loadProfile(){
+  sb.from('profiles').select('id,email,role,approved').eq('id',S.uid).maybeSingle().then(function(r){
+    if(r.error){showAuth('signin','Could not load your account: '+r.error.message,true);S.profileFor=null;return}
+    var p=r.data;
+    if(!p||!p.approved){if(S.authMode!=='pending')showAuth('pending');return}
+    startApp(p);
+  });
+}
+
+/* ---------- database adapter (documents on top of Supabase) ---------- */
+function makeDb(sb){
+  var subs=[],deb=null;
+  function mapErr(e){var m=(e&&e.message)||'',c=(e&&e.code)||'';
+    if(c==='42501'||c==='P0002'||/row-level security|permission denied|doc_not_found/i.test(m))return {code:'invalid_argument',message:m};
+    return {code:'unavailable',message:m}}
+  function runAll(){subs.forEach(function(s){s.run()})}
+  function kick(){clearTimeout(deb);deb=setTimeout(runAll,150)}
+  function listen(query,build,cb,errcb){
+    var last=null;
+    var s={run:function(){query().then(function(r){
+      if(r.error){if(errcb)errcb(mapErr(r.error));return}
+      var rows=r.data||[],j=JSON.stringify(rows);if(j===last)return;last=j;cb(build(rows))
+    },function(){})}};
+    subs.push(s);s.run();
+    return function(){subs=subs.filter(function(x){return x!==s})};
+  }
+  function wrap(p){return p.then(function(r){if(r&&r.error)throw mapErr(r.error);kick()})}
+  function newId(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)}
+  function mkDoc(row){return {id:row.id,exists:true,data:function(){return row.data}}}
+  function docRef(col,id){
+    return {id:id,path:col+'/'+id,
+      set:function(d){return wrap(sb.from('docs').upsert({collection:col,id:id,data:d,updated_at:new Date().toISOString()}))},
+      update:function(d){return wrap(sb.rpc('merge_doc',{p_collection:col,p_id:id,p_patch:d}))},
+      delete:function(){return wrap(sb.from('docs').delete().eq('collection',col).eq('id',id))},
+      onSnapshot:function(cb,errcb){return listen(function(){return sb.from('docs').select('id,data').eq('collection',col).eq('id',id)},function(rows){return {id:id,exists:rows.length>0,data:function(){return rows[0]&&rows[0].data}}},cb,errcb)}
+    };
+  }
+  function colRef(col){
+    return {path:col,
+      doc:function(id){return docRef(col,id||newId())},
+      add:function(d){var r=docRef(col,newId());return r.set(d).then(function(){return r})},
+      onSnapshot:function(cb,errcb){return listen(function(){return sb.from('docs').select('id,data').eq('collection',col).order('updated_at',{ascending:false}).limit(1000)},function(rows){return {docs:rows.map(mkDoc),size:rows.length,empty:!rows.length}},cb,errcb)}
+    };
+  }
+  try{sb.channel('crew-docs').on('postgres_changes',{event:'*',schema:'public',table:'docs'},kick).subscribe()}catch(e){}
+  setInterval(runAll,20000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)kick()});
+  return {collection:colRef,doc:function(path){var p=path.split('/');return docRef(p[0],p[1])}};
+}
+
+function startApp(p){
+  if(S.started)return;
+  S.started=true;S.admin=p.role==='manager';S.db=true;
+  if(pendTimer){clearInterval(pendTimer);pendTimer=null}
+  $('#auth').hidden=true;$('#app').hidden=false;
+  db=makeDb(sb);
+  sub('baristas','baristas');sub('checks','checks');sub('ideas','ideas');
+  subMap('assign','assign');subMap('plan','plan');
+  if(S.admin)subMap('scorecards','score');
+  db.doc('settings/config').onSnapshot(function(s){S.cfg=s.exists?s.data():{};schedule()},function(e){console.warn(e)});
+  if(S.admin){loadPeople();peopleTimer=setInterval(loadPeople,20000)}
+  schedule();
+}
+
+function boot(){
+  $('#ckDate').value=today();
+  $('#ovDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  $('#ovYear').textContent='('+new Date().getFullYear()+')';
+  syncYn();
+  var cfg=window.CREW_CONFIG||{};
+  if(!cfg.url||!cfg.anonKey||/PASTE/.test(cfg.url+cfg.anonKey)||!window.supabase){showAuth('setup');return}
+  sb=window.supabase.createClient(cfg.url,cfg.anonKey);
+  sb.auth.onAuthStateChange(function(ev,session){
+    setTimeout(function(){
+      if(ev==='PASSWORD_RECOVERY'){S.recovery=true;showAuth('recovery');return}
+      if(S.recovery)return;
+      handleSession(session);
+    },0);
+  });
+  sb.auth.getSession().then(function(r){if(!S.profileFor&&!S.started&&!S.recovery)handleSession(r.data&&r.data.session)});
+}
+boot();
+})();
+</script>
