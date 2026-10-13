@@ -6,20 +6,33 @@ if(reduce||!('IntersectionObserver' in window))return;
 var $=function(s,r){return (r||document).querySelector(s)};
 document.documentElement.classList.add('motion');
 
-/* 1. boot sequence, once per browser session, over the app while it loads */
-var STEPS=['Initialize crew book','Connect database','Load team','Load coffee checks','Build today','Start'];
+/* 1. opening animation: a V60 pour-over being brewed, once per browser session */
+var V60='<svg class="v60" viewBox="0 0 200 250" role="presentation" focusable="false"><defs><clipPath id="v60clip"><path d="M64 168 L136 168 L143 238 L57 238 Z"/></clipPath></defs>'
+ +'<path class="v-stream" d="M100 6 L100 74" pathLength="1"/>'
+ +'<path class="v-cone" d="M48 76 L152 76 L112 156 L88 156 Z"/>'
+ +'<path class="v-rim" d="M44 76 L156 76"/>'
+ +'<path class="v-ridge" d="M66 80 L92 154 M82 80 L96 154 M100 80 L100 154 M118 80 L104 154 M134 80 L108 154"/>'
+ +'<path class="v-bed" d="M64 90 Q100 104 136 90"/>'
+ +'<path class="v-glass" d="M64 168 L136 168 L143 238 L57 238 Z"/>'
+ +'<g clip-path="url(#v60clip)"><rect class="v-coffee" x="50" y="168" width="100" height="72"/></g>'
+ +'<circle class="v-drip" cx="100" cy="158" r="3"/>'
+ +'<path class="v-steam s1" d="M86 150 q-6 -10 0 -20 q6 -10 0 -20"/><path class="v-steam s2" d="M100 150 q-6 -12 0 -24 q6 -12 0 -24"/><path class="v-steam s3" d="M114 150 q-6 -10 0 -20 q6 -10 0 -20"/></svg>';
+var STAGES=[[0,'bloom'],[.18,'pour'],[.7,'drawdown'],[.97,'ready']];
 function boot(){
   try{if(sessionStorage.getItem('crew.booted'))return;sessionStorage.setItem('crew.booted','1')}catch(e){}
   var el=document.createElement('div');el.className='bootseq';el.setAttribute('aria-hidden','true');
-  el.innerHTML='<div class="bs-in"><div class="bs-list mono">'+STEPS.map(function(s,i){return '<div class="bs-row" style="--i:'+i+'"><span>'+String(i+1).padStart(2,'0')+'</span> '+s.toUpperCase()+'</div>'}).join('')+'</div><div class="bs-pct mono"><b id="bsPct">0</b>%</div><div class="bs-bar"><i id="bsBar"></i></div></div>';
+  el.innerHTML='<div class="bs-in">'+V60+'<div class="bs-word"><span id="bsStage">bloom</span></div><div class="bs-meta mono"><span>V60 \u00b7 1:16</span><span><b id="bsG">0</b> g of 288 g</span></div></div>';
   document.body.appendChild(el);
-  var t0=performance.now(),dur=1300,pct=$('#bsPct',el),bar=$('#bsBar',el),rows=el.querySelectorAll('.bs-row');
+  var t0=performance.now(),dur=3000,stage=$('#bsStage',el),g=$('#bsG',el),last='';
   (function tick(t){
-    var k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,2),v=Math.round(e*100);
-    pct.textContent=v;bar.style.transform='scaleX('+e+')';
-    rows.forEach(function(r,i){r.classList.toggle('on',v>=Math.round(i/rows.length*100))});
+    var k=Math.min(1,(t-t0)/dur),p=k<.12?k*.5:.06+((k-.12)/.88)*.94;
+    el.style.setProperty('--p',p.toFixed(4));
+    g.textContent=Math.round(Math.min(1,p*1.02)*288);
+    var st=STAGES[0][1];STAGES.forEach(function(x){if(p>=x[0])st=x[1]});
+    if(st!==last){last=st;stage.textContent=st;stage.classList.remove('sw');void stage.offsetWidth;stage.classList.add('sw')}
+    if(k>=.97)el.classList.add('done');
     if(k<1)requestAnimationFrame(tick);
-    else{el.classList.add('out');setTimeout(function(){el.remove()},500)}
+    else setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove()},650)},350);
   })(t0);
 }
 var app=$('#app');

@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var BUILD='2026-10-13.1';
+var BUILD='2026-10-13.2';
 var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -638,7 +638,7 @@ function buildNav(){
   $('#nav').innerHTML=TABS.map(function(t){return '<button data-act="tab" data-tab="'+t.id+'" data-label="'+esc(t.label)+'" aria-selected="'+(S.tab===t.id)+'"></button>'}).join('');
 }
 function renderHeader(){
-  $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm" data-act="signout">Sign out</button>':'';
+  $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm" id="menuBtn" data-act="menu" aria-haspopup="dialog" aria-expanded="'+!!S.menuOpen+'">Menu</button>':'';
   var counts=S.db?tabCounts():{};
   TABS.forEach(function(t){
     var b=$('#nav [data-tab="'+t.id+'"]');if(!b)return;
@@ -675,6 +675,25 @@ function setTab(t){
   S.tab=t;S.confirm=null;
   if(t==='access'&&S.admin)loadPeople();
   renderAll();window.scrollTo(0,0);
+}
+
+/* ---------- slide-out menu ---------- */
+function renderMenu(){
+  var m=$('#menuMount');
+  if(!S.menuOpen){m.innerHTML='';return}
+  var counts=tabCounts(),n=0;
+  var links=TABS.filter(tabVisible).map(function(t){
+    n++;var c=t.count?counts[t.count]:null;
+    return '<button class="mlink'+(S.tab===t.id?' cur':'')+'" style="--i:'+n+'" data-act="menu-tab" data-tab="'+t.id+'"><span class="mono mnum">'+String(n).padStart(2,'0')+'</span><span class="mname">'+esc(t.label)+'</span>'+(c!=null?'<span class="mono mcount">'+c+'</span>':'')+'</button>';
+  }).join('');
+  m.innerHTML='<div class="mscrim" data-act="menu-close"></div><aside class="menu" role="dialog" aria-modal="true" aria-label="Menu"><div class="menu-head"><span class="label">Menu</span><button class="btn ghost sm" id="menuClose" data-act="menu-close">Close</button></div><nav class="mlinks">'+links+'</nav><div class="menu-foot" style="--i:'+(n+1)+'"><div class="small muted">'+esc(S.email||'')+'</div><div class="row">'+(S.admin?pill('Manager view','acc'):pill('Team view',''))+'<button class="btn ghost sm" data-act="signout">Sign out</button></div><div class="small muted mono">Build '+esc(BUILD)+'</div></div></aside>';
+}
+function openMenu(){S.menuOpen=true;renderMenu();var b=$('#menuBtn');if(b)b.setAttribute('aria-expanded','true');var c=$('#menuClose');if(c)c.focus();document.body.classList.add('noscroll')}
+function closeMenu(){
+  if(!S.menuOpen)return;S.menuOpen=false;document.body.classList.remove('noscroll');
+  var m=$('#menuMount');m.classList.add('closing');
+  setTimeout(function(){m.classList.remove('closing');if(!S.menuOpen)m.innerHTML=''},REDUCE?0:280);
+  var b=$('#menuBtn');if(b){b.setAttribute('aria-expanded','false');b.focus()}
 }
 
 /* ---------- writes ---------- */
@@ -909,6 +928,9 @@ document.addEventListener('click',function(e){
   var t=e.target.closest('[data-act]');if(!t)return;
   var act=t.dataset.act,i;
   if(act==='tab'){setTab(t.dataset.tab)}
+  else if(act==='menu'){S.menuOpen?closeMenu():openMenu()}
+  else if(act==='menu-close'){closeMenu()}
+  else if(act==='menu-tab'){var mt=t.dataset.tab;closeMenu();setTimeout(function(){setTab(mt)},REDUCE?0:120)}
   else if(act==='open-b'){S.openId=t.dataset.id;S.confirm=null;renderDrawer()}
   else if(act==='close-drawer'){S.openId=null;S.confirm=null;renderDrawer()}
   else if(act==='rate'){rate(t.dataset.kind,t.dataset.key,parseInt(t.dataset.v,10))}
@@ -1029,7 +1051,7 @@ document.addEventListener('pointerdown',overChart);
 document.addEventListener('focusin',function(e){if(e.target.matches&&e.target.matches('.bar[data-tip]')){var r=e.target.getBoundingClientRect();showTip(e.target.getAttribute('data-tip').split('|'),r.left+r.width/2,r.top)}});
 document.addEventListener('focusout',hideTip);
 window.addEventListener('scroll',hideTip,{passive:true});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){hideTip();if(S.openId){S.openId=null;renderDrawer()}}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){hideTip();if(S.menuOpen){closeMenu();return}if(S.openId){S.openId=null;renderDrawer()}}});
 window.addEventListener('online',flushQueue);
 
 /* ---------- subscriptions ---------- */

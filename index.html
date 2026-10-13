@@ -310,6 +310,72 @@ main.tabin .tab:not([hidden])>*:nth-child(2){animation-delay:60ms}main.tabin .ta
 }
 @keyframes wordup{from{transform:translateY(105%)}to{transform:none}}
 
+/* ---- smoother easing: one curve everywhere ---- */
+:root{--ease:cubic-bezier(.16,1,.3,1)}
+.motion .item,.motion .card,.motion .person,.motion .stat{transition:opacity .9s var(--ease),transform .9s var(--ease),background-color .2s}
+.rv{transform:translateY(24px)}
+main.tabin .head,main.tabin .tab:not([hidden])>*{animation-duration:.8s;animation-timing-function:var(--ease)}
+@media (prefers-reduced-motion:no-preference){
+  main.fresh .hero,main.fresh .stat,main.fresh .card,main.fresh .person,main.fresh .head{animation-duration:.85s;animation-timing-function:var(--ease)}
+  main.fresh .hero-word span{animation-duration:1.1s;animation-timing-function:var(--ease)}
+  .drawer{animation:slidein .5s var(--ease)}
+  .btn,.chip,.seg button,.person,.item.rowbtn,.nav button{transition-duration:.25s;transition-timing-function:var(--ease)}
+  .btn{transition:background-size .4s var(--ease),color .2s,border-color .2s}
+  .bar>i{transition:width .8s var(--ease)}
+  .toast{animation:rise .5s var(--ease) both}
+  html{scroll-behavior:smooth}
+}
+@keyframes slidein{from{transform:translateX(56px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- slide-out menu ---- */
+body.noscroll{overflow:hidden}
+.mscrim{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45)}
+.menu{position:fixed;top:0;right:0;bottom:0;z-index:81;width:min(520px,100%);background:var(--bg);border-left:1px solid var(--rule);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);overflow-y:auto}
+.menu-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.mlinks{display:grid;padding:8px 16px}
+.mlink{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:baseline;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:14px 0;color:inherit;cursor:pointer}
+.mlink:hover .mname{color:var(--accent);transform:translateX(8px)}
+.mlink.cur .mname{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
+.mnum{font-size:11px;color:var(--muted)}
+.mname{font-family:var(--f-display);font-size:clamp(34px,8vw,52px);letter-spacing:-.05em;line-height:1;text-transform:lowercase;display:inline-block;transition:transform .4s var(--ease),color .2s}
+.mcount{font-size:12px;color:var(--muted)}
+.menu-foot{margin-top:auto;display:grid;gap:10px;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--rule)}
+@media (prefers-reduced-motion:no-preference){
+  .mscrim{animation:fade .35s ease both}
+  .menu{animation:menuin .55s var(--ease) both}
+  .mlink,.menu-foot{animation:rise .7s var(--ease) both;animation-delay:calc(120ms + var(--i,0)*55ms)}
+  #menuMount.closing .menu{animation:menuout .28s ease-in both}
+  #menuMount.closing .mscrim{animation:fadeout .28s ease-in both}
+  #menuMount.closing .mlink,#menuMount.closing .menu-foot{animation:none}
+}
+@keyframes menuin{from{transform:translateX(100%)}to{transform:none}}
+@keyframes menuout{to{transform:translateX(100%)}}
+@keyframes fadeout{to{opacity:0}}
+
+/* ---- opening screen: V60 ---- */
+.bootseq{align-content:center;justify-items:center;padding:24px 16px}
+.bootseq .bs-in{justify-items:center;text-align:center;gap:6px}
+.bootseq .bs-list,.bootseq .bs-pct,.bootseq .bs-bar{display:none}
+.v60{width:min(220px,56vw);height:auto;overflow:visible;margin-bottom:6px}
+.v60 *{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.v60 .v-ridge,.v60 .v-bed{stroke:var(--muted);stroke-width:1.5}
+.v60 .v-glass{stroke:var(--ink)}
+.v60 .v-coffee{fill:var(--ink);stroke:none;transform-box:fill-box;transform-origin:bottom;transform:scaleY(calc(var(--p,0)*.92));transition:none}
+.v60 .v-drip{fill:var(--accent);stroke:none;animation:drip .7s ease-in infinite}
+.v60 .v-stream{stroke:var(--accent);stroke-width:3;animation:streampulse .6s ease-in-out infinite}
+.v60 .v-steam{stroke:var(--muted);stroke-width:1.5;opacity:0}
+.bootseq.done .v-stream,.bootseq.done .v-drip{opacity:0;animation:none;transition:opacity .3s}
+.bootseq.done .v-steam{animation:steam 1.8s var(--ease) infinite}
+.bootseq.done .v-steam.s2{animation-delay:.25s}.bootseq.done .v-steam.s3{animation-delay:.5s}
+.bs-word{font-family:var(--f-display);font-size:clamp(48px,14vw,104px);line-height:.95;letter-spacing:-.06em;font-weight:500;text-transform:lowercase;overflow:hidden;padding-bottom:.24em;margin-bottom:-.14em}
+.bs-word span{display:inline-block}
+.bs-word span.sw{animation:wordup .6s var(--ease) both}
+.bs-meta{display:flex;gap:18px;justify-content:center;font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.bs-meta b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+@keyframes drip{0%{transform:translateY(0);opacity:1}80%{opacity:1}100%{transform:translateY(calc(60px - var(--p,0)*52px));opacity:0}}
+@keyframes streampulse{50%{opacity:.55}}
+@keyframes steam{0%{opacity:0;transform:translateY(8px)}40%{opacity:.8}100%{opacity:0;transform:translateY(-14px)}}
+
 </style>
 </head>
 <body>
@@ -423,12 +489,13 @@ main.tabin .tab:not([hidden])>*:nth-child(2){animation-delay:60ms}main.tabin .ta
 </main>
 
 <div id="drawerMount"></div>
+<div id="menuMount"></div>
 </div>
 <div id="toastMount" aria-live="polite"></div>
 <div class="auth" id="auth" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=2026-10-13.1"></script>
-<script src="motion.js?v=2026-10-13.1" defer></script>
+<script src="app.js?v=2026-10-13.2"></script>
+<script src="motion.js?v=2026-10-13.2" defer></script>
 </body>
 </html>
