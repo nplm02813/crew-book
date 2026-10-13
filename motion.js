@@ -63,7 +63,7 @@ if(main){
 
 /* 3. tab change: content slides in */
 document.addEventListener('click',function(e){
-  var t=e.target.closest&&e.target.closest('#nav [data-tab]');if(!t||!main)return;
+  var t=e.target.closest&&e.target.closest('.mlink, [data-act=tab]');if(!t||!main)return;
   main.classList.remove('tabin');void main.offsetWidth;main.classList.add('tabin');
   setTimeout(function(){main.classList.remove('tabin')},600);
 });
@@ -86,7 +86,7 @@ if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
   var hud=document.createElement('div');hud.className='hud mono';hud.setAttribute('aria-hidden','true');hud.textContent='X:0000 Y:0000';document.body.appendChild(hud);
   var hx=0,hy=0,hq=false;
   document.addEventListener('pointermove',function(e){
-    hx=e.clientX;hy=e.clientY;
+    hx=Math.round(e.clientX);hy=Math.round(e.clientY);
     if(!hq){hq=true;requestAnimationFrame(function(){hq=false;hud.textContent='X:'+String(hx).padStart(4,'0')+' Y:'+String(hy).padStart(4,'0');hud.classList.add('on')})}
   });
   document.addEventListener('pointerleave',function(){hud.classList.remove('on')});

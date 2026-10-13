@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f1f1ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,10 +22,10 @@
 /* Direction: an editorial index. Giant lowercase wordmark stacked with version and year, text-led rows separated by hairlines, counts in brackets, mono labels. Monochrome with one signal orange used only for what needs attention. Ratings are a grey ramp of ink strength. */
 :root{
   color-scheme:light;
-  --bg:#f1f1ee; --surface:#f1f1ee; --surface2:#e5e5e0; --ink:#0e0e0d; --muted:#76766f; --line:rgba(14,14,13,.16); --rule:#0e0e0d;
-  --accent:#ff4a1c; --accent-ink:#f1f1ee; --accent-soft:#e5e5e0;
-  --good:#0e0e0d; --good-soft:#0e0e0d; --warn:#d63a10; --warn-soft:#f1f1ee; --bad:#ff4a1c; --bad-soft:#ff4a1c;
-  --s0:#ff4a1c; --s0t:#f1f1ee; --s1:#cfcfc8; --s1t:#0e0e0d; --s2:#7d7d76; --s2t:#f1f1ee; --s3:#0e0e0d; --s3t:#f1f1ee;
+  --bg:#ffffff; --surface:#ffffff; --surface2:#f3f3f0; --ink:#0e0e0d; --muted:#76766f; --line:rgba(14,14,13,.16); --rule:#0e0e0d;
+  --accent:#ff4a1c; --accent-ink:#ffffff; --accent-soft:#f3f3f0;
+  --good:#0e0e0d; --good-soft:#0e0e0d; --warn:#d63a10; --warn-soft:#ffffff; --bad:#ff4a1c; --bad-soft:#ff4a1c;
+  --s0:#ff4a1c; --s0t:#ffffff; --s1:#cfcfc8; --s1t:#0e0e0d; --s2:#7d7d76; --s2t:#ffffff; --s3:#0e0e0d; --s3t:#ffffff;
   --f-display:"Geist","Helvetica Neue",Arial,sans-serif;
   --f-body:"Geist","Helvetica Neue",Arial,sans-serif;
   --f-label:"Geist Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -301,7 +301,7 @@ main.tabin .tab:not([hidden])>*:nth-child(2){animation-delay:60ms}main.tabin .ta
 .hud{position:fixed;left:12px;bottom:10px;z-index:15;font-size:10.5px;letter-spacing:.08em;color:var(--muted);opacity:0;transition:opacity .2s;pointer-events:none}
 .hud.on{opacity:.8}
 @media (prefers-reduced-motion:no-preference){
-  .hero-word span{display:block;overflow:hidden;padding-bottom:.16em;margin-bottom:-.16em}
+  .hero-word span{display:block;overflow:hidden;padding-bottom:.3em;margin-bottom:-.3em}
   main.fresh .hero-word span{animation:wordup .8s cubic-bezier(.2,.7,.2,1) both}
   main.fresh .hero-word span:nth-child(2){animation-delay:.08s}main.fresh .hero-word span:nth-child(3){animation-delay:.16s}
   .btn{background-image:linear-gradient(var(--accent),var(--accent));background-repeat:no-repeat;background-size:0 100%;transition:background-size .25s ease,color .15s,border-color .15s}
@@ -376,13 +376,37 @@ body.noscroll{overflow:hidden}
 @keyframes streampulse{50%{opacity:.55}}
 @keyframes steam{0%{opacity:0;transform:translateY(8px)}40%{opacity:.8}100%{opacity:0;transform:translateY(-14px)}}
 
+
+/* ---- header without tabs: crumb, ticker, menu ---- */
+.menubar{flex-wrap:wrap;gap:0 16px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.crumb{font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:400;text-transform:lowercase}
+.ticker{order:3;flex-basis:100%;display:flex;align-items:center;gap:12px;min-width:0;padding:0 0 9px;overflow:hidden}
+.beans{display:inline-flex;gap:2px;flex:none}
+.beans svg{width:16px;height:16px;fill:var(--ink);stroke:none;overflow:visible}
+.beans svg:nth-child(even){fill:var(--accent)}
+.beans svg path{stroke:var(--bg);stroke-width:1.6;fill:none}
+.note{font-size:11px;letter-spacing:.05em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:860px){
+  .menubar{flex-wrap:nowrap}
+  .ticker{order:2;flex:1;flex-basis:auto;justify-content:center;padding:0}
+}
+@media (prefers-reduced-motion:no-preference){
+  .beans svg{animation:hop 1.6s var(--ease) infinite;animation-delay:calc(var(--k,0)*.14s);transform-origin:50% 100%}
+  .beans svg:nth-child(2){animation-delay:.14s}.beans svg:nth-child(3){animation-delay:.28s}.beans svg:nth-child(4){animation-delay:.42s}
+  .note.swap{animation:noteup .7s var(--ease) both}
+}
+@keyframes hop{0%,55%,100%{transform:translateY(0) rotate(0)}22%{transform:translateY(-7px) rotate(-18deg)}38%{transform:translateY(0) rotate(8deg)}46%{transform:translateY(-2px) rotate(0)}}
+@keyframes noteup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
 </style>
 </head>
 <body>
 
 <div id="app" hidden>
 <div class="queue-bar" id="queueBar" role="status" hidden></div>
-<header class="top" id="top"><div class="wrap menubar"><div class="brand">crew<sup>®</sup></div><div class="who" id="who"></div><nav class="nav" id="nav" aria-label="Sections"></nav></div></header>
+<header class="top" id="top"><div class="wrap menubar"><div class="brand">crew<sup>®</sup><span class="crumb mono" id="crumb"></span></div><div class="ticker" id="ticker" aria-hidden="true"><span class="beans"><svg viewBox="0 0 24 24"><use href="#bean"/></svg><svg viewBox="0 0 24 24"><use href="#bean"/></svg><svg viewBox="0 0 24 24"><use href="#bean"/></svg><svg viewBox="0 0 24 24"><use href="#bean"/></svg></span><span class="note mono" id="tickNote"></span></div><div class="who" id="who"></div></div></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="bean" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)"/><path d="M7.5 5.5 C13 9 11 14 16.5 18.5" /></symbol></defs></svg>
 
 <main class="wrap">
   <section class="tab" id="tab-overview">
@@ -495,7 +519,7 @@ body.noscroll{overflow:hidden}
 <div class="auth" id="auth" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=2026-10-13.2"></script>
-<script src="motion.js?v=2026-10-13.2" defer></script>
+<script src="app.js?v=2026-10-13.3"></script>
+<script src="motion.js?v=2026-10-13.3" defer></script>
 </body>
 </html>

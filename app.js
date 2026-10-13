@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var BUILD='2026-10-13.2';
+var BUILD='2026-10-13.3';
 var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -634,11 +634,10 @@ function tabCounts(){
   var pend=S.people.filter(function(p){return !p.approved}).length;
   return {team:S.baristas.length,roles:respList().length,checks:S.checks.length,lead:S.baristas.filter(function(b){return b.inCohort}).length,ideas:S.ideas.length,access:S.admin&&pend?pend:null};
 }
-function buildNav(){
-  $('#nav').innerHTML=TABS.map(function(t){return '<button data-act="tab" data-tab="'+t.id+'" data-label="'+esc(t.label)+'" aria-selected="'+(S.tab===t.id)+'"></button>'}).join('');
-}
+function buildNav(){}
 function renderHeader(){
   $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm" id="menuBtn" data-act="menu" aria-haspopup="dialog" aria-expanded="'+!!S.menuOpen+'">Menu</button>':'';
+  var cr=$('#crumb'),ct=TABS.filter(function(t){return t.id===S.tab})[0];if(cr)cr.textContent=S.db&&ct?'/ '+ct.label.toLowerCase():'';
   var counts=S.db?tabCounts():{};
   TABS.forEach(function(t){
     var b=$('#nav [data-tab="'+t.id+'"]');if(!b)return;
@@ -694,6 +693,15 @@ function closeMenu(){
   var m=$('#menuMount');m.classList.add('closing');
   setTimeout(function(){m.classList.remove('closing');if(!S.menuOpen)m.innerHTML=''},REDUCE?0:280);
   var b=$('#menuBtn');if(b){b.setAttribute('aria-expanded','false');b.focus()}
+}
+
+/* ---------- header ticker: hopping beans and little notes ---------- */
+var NOTES=['tamp it like you mean it','decaf is just a rumour','shots pulled, feelings suppressed','milk steamed, ego not','grind size: ask again later','dial in. breathe. repeat.','nobody wants a cold flat white','bean there, done that','espresso yourself','life happens, coffee helps','fresh beans, fresh start','one more shot never hurt','latte art is just milk drawing','mondays need a double'];
+function startTicker(){
+  var el=$('#tickNote');if(!el)return;
+  var i=Math.floor(Math.random()*NOTES.length);
+  function show(){el.textContent=NOTES[i%NOTES.length];if(!REDUCE){el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')}i++}
+  show();if(!REDUCE)setInterval(show,5200);
 }
 
 /* ---------- writes ---------- */
@@ -1185,7 +1193,7 @@ function startApp(p){
   if(S.admin&&S.tab==='me')S.tab='overview';
   if(pendTimer){clearInterval(pendTimer);pendTimer=null}
   $('#auth').hidden=true;$('#app').hidden=false;
-  db=makeDb(sb);loadQueue();buildNav();
+  db=makeDb(sb);loadQueue();startTicker();
   sub('baristas','baristasRaw',null,rebuild);
   subMap('staff','staff',rebuild);
   sub('checks','checks',{sinceDays:150});
@@ -1210,7 +1218,7 @@ function boot2(){
   $('#ckDate').value=today();
   $('#ovDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
   $('#ovYear').textContent='('+new Date().getFullYear()+')';
-  syncYn();buildNav();
+  syncYn();
   var c=window.CREW_CONFIG||{};
   var cfgUrl=String(c.url||'').trim().replace(/\/+$/,'').replace(/\/(rest|auth)\/v1.*$/,'');
   var cfgKey=String(c.anonKey||'').trim();
