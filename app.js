@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var BUILD='2026-10-13.3';
+var BUILD='2026-10-13.4';
 var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var REDUCE=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -636,7 +636,7 @@ function tabCounts(){
 }
 function buildNav(){}
 function renderHeader(){
-  $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm" id="menuBtn" data-act="menu" aria-haspopup="dialog" aria-expanded="'+!!S.menuOpen+'">Menu</button>':'';
+  $('#who').innerHTML=S.db?(S.admin?pill('Manager view','acc'):pill('Team view',''))+' <button class="btn ghost sm icon" data-act="theme" id="themeBtn" aria-label="'+themeLabel()+'" title="'+themeLabel()+'">'+themeIcon()+'</button> <button class="btn ghost sm" id="menuBtn" data-act="menu" aria-haspopup="dialog" aria-expanded="'+!!S.menuOpen+'">Menu</button>':'';
   var cr=$('#crumb'),ct=TABS.filter(function(t){return t.id===S.tab})[0];if(cr)cr.textContent=S.db&&ct?'/ '+ct.label.toLowerCase():'';
   var counts=S.db?tabCounts():{};
   TABS.forEach(function(t){
@@ -685,7 +685,7 @@ function renderMenu(){
     n++;var c=t.count?counts[t.count]:null;
     return '<button class="mlink'+(S.tab===t.id?' cur':'')+'" style="--i:'+n+'" data-act="menu-tab" data-tab="'+t.id+'"><span class="mono mnum">'+String(n).padStart(2,'0')+'</span><span class="mname">'+esc(t.label)+'</span>'+(c!=null?'<span class="mono mcount">'+c+'</span>':'')+'</button>';
   }).join('');
-  m.innerHTML='<div class="mscrim" data-act="menu-close"></div><aside class="menu" role="dialog" aria-modal="true" aria-label="Menu"><div class="menu-head"><span class="label">Menu</span><button class="btn ghost sm" id="menuClose" data-act="menu-close">Close</button></div><nav class="mlinks">'+links+'</nav><div class="menu-foot" style="--i:'+(n+1)+'"><div class="small muted">'+esc(S.email||'')+'</div><div class="row">'+(S.admin?pill('Manager view','acc'):pill('Team view',''))+'<button class="btn ghost sm" data-act="signout">Sign out</button></div><div class="small muted mono">Build '+esc(BUILD)+'</div></div></aside>';
+  m.innerHTML='<div class="mscrim" data-act="menu-close"></div><aside class="menu" role="dialog" aria-modal="true" aria-label="Menu"><div class="menu-head"><span class="label">Menu</span><button class="btn ghost sm" id="menuClose" data-act="menu-close">Close</button></div><nav class="mlinks">'+links+'</nav><div class="menu-foot" style="--i:'+(n+1)+'"><div class="small muted">'+esc(S.email||'')+'</div><div class="row"><span class="label">Appearance</span><button class="chip" data-act="theme-set" data-v="light" aria-pressed="'+(effTheme()==='light')+'">Light</button><button class="chip" data-act="theme-set" data-v="dark" aria-pressed="'+(effTheme()==='dark')+'">Dark</button></div><div class="row">'+(S.admin?pill('Manager view','acc'):pill('Team view',''))+'<button class="btn ghost sm" data-act="signout">Sign out</button></div><div class="small muted mono">Build '+esc(BUILD)+'</div></div></aside>';
 }
 function openMenu(){S.menuOpen=true;renderMenu();var b=$('#menuBtn');if(b)b.setAttribute('aria-expanded','true');var c=$('#menuClose');if(c)c.focus();document.body.classList.add('noscroll')}
 function closeMenu(){
@@ -702,6 +702,21 @@ function startTicker(){
   var i=Math.floor(Math.random()*NOTES.length);
   function show(){el.textContent=NOTES[i%NOTES.length];if(!REDUCE){el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')}i++}
   show();if(!REDUCE)setInterval(show,5200);
+}
+
+/* ---------- light / dark ---------- */
+function effTheme(){var t=document.documentElement.getAttribute('data-theme');if(t==='dark'||t==='light')return t;return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
+function themeLabel(){return effTheme()==='dark'?'Switch to light mode':'Switch to dark mode'}
+function themeIcon(){return effTheme()==='dark'
+  ?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
+  :'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  try{localStorage.setItem('crew.theme',t)}catch(e){}
+  $$('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',t==='dark'?'#0c0c0b':'#ffffff')});
+  var b=$('#themeBtn');if(b){b.innerHTML=themeIcon();b.setAttribute('aria-label',themeLabel());b.title=themeLabel()}
+  $$('[data-act=theme-set]').forEach(function(c){c.setAttribute('aria-pressed',c.dataset.v===t?'true':'false')});
+  if(S.tab==='checks'||S.tab==='overview'||S.tab==='me')schedule();
 }
 
 /* ---------- writes ---------- */
@@ -936,6 +951,8 @@ document.addEventListener('click',function(e){
   var t=e.target.closest('[data-act]');if(!t)return;
   var act=t.dataset.act,i;
   if(act==='tab'){setTab(t.dataset.tab)}
+  else if(act==='theme'){setTheme(effTheme()==='dark'?'light':'dark')}
+  else if(act==='theme-set'){setTheme(t.dataset.v)}
   else if(act==='menu'){S.menuOpen?closeMenu():openMenu()}
   else if(act==='menu-close'){closeMenu()}
   else if(act==='menu-tab'){var mt=t.dataset.tab;closeMenu();setTimeout(function(){setTab(mt)},REDUCE?0:120)}
