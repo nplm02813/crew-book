@@ -230,34 +230,6 @@ input[type=email]:focus,input[type=password]:focus{outline:0;border-color:var(--
 .queue-bar{background:var(--accent);color:var(--accent-ink);font-family:var(--f-label);font-size:12px;letter-spacing:.03em;padding:8px 16px;text-align:center}
 .drawer.still{animation:none!important}
 
-/* charts */
-.chartbox{display:grid;gap:8px;min-width:0}
-svg.chart{display:block;max-width:100%;height:auto;overflow:visible;touch-action:pan-y}
-.chart .grid{stroke:var(--line);stroke-width:1}
-.chart .axis{fill:var(--muted);font-family:var(--f-mono);font-size:10.5px}
-.chart .val{fill:var(--ink);font-family:var(--f-mono);font-size:11px;font-weight:500}
-.chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.chart .dot{fill:var(--ink);stroke:var(--bg);stroke-width:2}
-.chart .xh{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
-.chart .mk-ok{fill:var(--mk-ok)}
-.chart .mk-flag{fill:var(--accent)}
-.chart .hit{fill:transparent}
-.chart .bar:hover .mk-ok,.chart .bar:focus .mk-ok{fill:var(--ink)}
-.chart .bar:focus{outline:0}.chart .bar:focus-visible .hit{stroke:var(--ink);stroke-width:1}
-.legend i{display:inline-block}
-details.tbl summary{cursor:pointer;font-family:var(--f-label);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-details.tbl table{border-collapse:collapse;margin-top:6px;font-size:13px;width:100%}
-details.tbl th,details.tbl td{text-align:left;padding:3px 12px 3px 0;border-bottom:1px solid var(--line)}
-details.tbl th{font-family:var(--f-label);font-size:10.5px;text-transform:uppercase;color:var(--muted);font-weight:400}
-.hbars{display:grid;gap:10px}
-.hb{display:grid;grid-template-columns:minmax(80px,1fr) 2fr auto;gap:10px;align-items:center;font-size:13px}
-.hb-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hb-bar{height:12px;background:var(--line);display:block}
-.hb-bar i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
-.hb-v{color:var(--muted);font-size:12px}
-.tip{position:fixed;z-index:70;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 10px;font-family:var(--f-label);font-size:12px;line-height:1.4;max-width:240px}
-.tip-v{font-weight:500}.tip-l{opacity:.8}
-
 /* motion (all of it off under reduced motion) */
 @media (prefers-reduced-motion:no-preference){
   main.fresh .hero,main.fresh .stat,main.fresh .card,main.fresh .person,main.fresh .head{animation:rise .5s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*45ms)}
@@ -382,7 +354,7 @@ body.noscroll{overflow:hidden}
 .menubar{flex-wrap:wrap;gap:0 16px}
 .brand{display:flex;align-items:baseline;gap:10px}
 .crumb{font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:400;text-transform:lowercase}
-.ticker{order:3;flex-basis:100%;display:flex;align-items:center;gap:12px;min-width:0;padding:0 0 9px;overflow:hidden}
+.ticker{order:3;flex-basis:100%;display:flex;align-items:center;gap:12px;min-width:0;padding:8px 0 9px;overflow:visible}
 .beans{display:inline-flex;gap:2px;flex:none}
 .beans svg{width:16px;height:16px;fill:var(--ink);stroke:none;overflow:visible}
 .beans svg:nth-child(even){fill:var(--accent)}
@@ -434,7 +406,7 @@ body{overscroll-behavior-y:none}
   .mlink{padding:16px 0}
   .toast{left:16px;right:16px;transform:none;text-align:center;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   .hud{display:none}
-  .ticker{padding-bottom:7px}
+  .ticker{padding:8px 0 7px}
   .hb{grid-template-columns:minmax(70px,1fr) 1.6fr auto}
 }
 @media (max-width:360px){.brand{font-size:20px}.crumb{display:none}}
@@ -484,88 +456,42 @@ body{overflow-x:hidden}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="bean" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)"/><path d="M7.5 5.5 C13 9 11 14 16.5 18.5" /></symbol></defs></svg>
 
 <main class="wrap">
-  <section class="tab" id="tab-overview">
-    <div class="hero"><div class="label" id="ovDate"></div><h1 class="hero-word"><span>crew<sup>®</sup></span><span>/v.02</span><span id="ovYear">(2026)</span></h1><p>What needs attention, who is ready for more, and where the team is thin.</p></div>
-    <div id="ovBody" class="stack"></div>
-  </section>
-
-  <section class="tab" id="tab-me" hidden>
-    <div class="head"><div><h2>me</h2><p>Your skills, what you can take on, and what to work on next.</p></div></div>
-    <div id="meBody" class="stack"></div>
+  <section class="tab" id="tab-locations">
+    <div class="head" id="locHead"><div><div class="label" id="ovDate"></div><h2>Locations</h2><p>Pick a location to see its baristas and today’s coffee checks.</p></div></div>
+    <div id="locBody" class="stack"></div>
   </section>
 
   <section class="tab" id="tab-team" hidden>
-    <div class="head">
-      <div><h2>Team</h2><p>Everyone on the bar, what each person can do, and what to give them next.</p></div>
-      <div class="row" id="teamTools"></div>
-    </div>
-    <div class="legend" id="teamLegend" aria-label="Rating scale"><span><i style="background:var(--s0)"></i>0 Not trained</span><span><i style="background:var(--s1)"></i>1 Learning</span><span><i style="background:var(--s2)"></i>2 Independent</span><span><i style="background:var(--s3)"></i>3 Can train others</span></div>
-    <div id="teamGrid" class="grid g-auto"></div>
-  </section>
-
-  <section class="tab" id="tab-roles" hidden>
-    <div class="head"><div><h2>Responsibilities</h2><p>Each duty lists the skills it needs. People who meet every skill level show as ready, and people one step away show as almost.</p></div></div>
-    <div id="rolesBody" class="grid g-2"></div>
+    <div class="head"><div><h2>Baristas</h2><p>Everyone on the team. Tap a name to open their file.</p></div></div>
+    <div id="teamBody" class="stack"></div>
   </section>
 
   <section class="tab" id="tab-checks" hidden>
-    <div class="head"><div><h2>Coffee checks</h2><p>Log each check of the coffee. Anything skipped, off-recipe or not brewing well is flagged for follow-up.</p></div></div>
+    <div class="head"><div><h2>Coffee checks</h2><p>Log each check of the coffee. Anything skipped or not right is flagged for follow-up.</p></div></div>
     <div id="ckBlocked"></div>
     <form class="card stack" id="checkForm" autocomplete="off"><h3 id="ckFormTitle">Log a coffee check</h3>
       <div class="form">
-        <label class="field"><span>Date</span><input type="date" id="ckDate"></label>
-        <label class="field"><span>Shift</span><select id="ckShift"><option>Opening</option><option>Mid-day</option><option>Closing</option><option>Other</option></select></label>
         <label class="field"><span>Barista</span><select id="ckWho"></select></label>
-        <label class="field"><span>Coffee / beans</span><input type="text" id="ckCoffee" list="coffeeList" placeholder="House espresso blend"><datalist id="coffeeList"></datalist></label>
+        <label class="field"><span>Coffee / beans</span><input type="text" id="ckCoffee" list="coffeeList" placeholder="House espresso"><datalist id="coffeeList"></datalist></label>
+        <label class="field"><span>Date</span><input type="date" id="ckDate"></label>
       </div>
       <div class="form">
         <div class="field"><span>Did you check the coffee?</span><div class="yn" data-q="checked"><button type="button" data-act="yn" data-q="checked" data-v="1">Yes</button><button type="button" data-act="yn" data-q="checked" data-v="0">No</button></div></div>
         <div class="field"><span>Any problem with the recipe?</span><div class="yn" data-q="recipe"><button type="button" data-act="yn" data-q="recipe" data-v="1">Yes</button><button type="button" data-act="yn" data-q="recipe" data-v="0">No</button></div></div>
         <div class="field"><span>Is it brewing well?</span><div class="yn" data-q="brew"><button type="button" data-act="yn" data-q="brew" data-v="1">Yes</button><button type="button" data-act="yn" data-q="brew" data-v="0">No</button></div></div>
       </div>
-      <div class="form">
-        <label class="field"><span>Dose in (g)</span><input type="number" id="ckDose" step="0.1" min="0" inputmode="decimal"></label>
-        <label class="field"><span>Yield out (g)</span><input type="number" id="ckYield" step="0.1" min="0" inputmode="decimal"></label>
-        <label class="field"><span>Time (sec)</span><input type="number" id="ckTime" step="1" min="0" inputmode="numeric"></label>
-        <div class="field"><span>Ratio</span><div class="mono" id="ckRatio" style="padding:8px 0">—</div></div>
-      </div>
-      <div class="hint" id="ckHint" hidden></div>
-      <div class="form">
-        <label class="field wide"><span>Taste notes</span><input type="text" id="ckTaste" placeholder="Sour and thin, ran fast"></label>
-        <label class="field wide"><span>What did you change or what needs fixing?</span><input type="text" id="ckFix" placeholder="Ground finer by 2 steps, re-pulled, now 27 s"></label>
-      </div>
+      <label class="field"><span>Notes: what you saw or changed</span><input type="text" id="ckFix" placeholder="Sour and thin, ground finer, now fine"></label>
       <div class="row between"><span class="small muted" id="ckMsg">Answer the three questions to log the check.</span><span class="row"><button class="btn ghost" type="button" id="ckCancel" data-act="cancel-edit" hidden>Cancel</button><button class="btn" type="submit" id="ckSubmit">Log check</button></span></div>
     </form>
-    <div id="ckCharts"></div>
-    <div class="card"><h3>Last 30 days</h3><div id="ckSummary" class="list" style="margin-top:8px"></div></div>
     <div class="card">
-      <div class="row between"><h3>Recent checks</h3><div class="row"><button class="chip" data-act="ckfilter" data-v="all" aria-pressed="true">All</button><button class="chip" data-act="ckfilter" data-v="flag" aria-pressed="false">Follow-up only</button></div></div>
+      <div class="row between"><h3>Recent checks</h3><div class="row"><select id="ckLoc" aria-label="Location" style="width:160px" hidden></select><button class="chip" data-act="ckfilter" data-v="all" aria-pressed="true">All</button><button class="chip" data-act="ckfilter" data-v="flag" aria-pressed="false">Follow-up only</button></div></div>
       <div id="ckList" class="list" style="margin-top:8px"></div>
     </div>
   </section>
 
-  <section class="tab" id="tab-lead" hidden>
-    <div class="head"><div><h2>Leadership group</h2><p>A small group working together at one location to learn how the shop runs, and the people who could become head barista.</p></div></div>
-    <div id="leadRoster" class="stack"></div>
-    <div class="card"><h3>8-week plan</h3><p class="muted small" style="margin:2px 0 6px">What the group does together each week and what they bring back.</p><div id="leadPlan" class="list"></div></div>
-    <div class="card" id="leadScoring" hidden></div>
-  </section>
-
-  <section class="tab" id="tab-ideas" hidden>
-    <div class="head"><div><h2>Improvement ideas</h2><p>Problems people see and changes they would make. Ideas are ranked by impact and effort.</p></div></div>
-    <div id="idBlocked"></div>
-    <form class="card stack" id="ideaForm" autocomplete="off"><h3 id="idFormTitle">New idea</h3>
-      <div class="form">
-        <label class="field"><span>Raised by</span><select id="idWho"></select></label>
-        <label class="field"><span>Area</span><select id="idArea"></select></label>
-        <label class="field"><span>Expected impact</span><select id="idImpact"><option>High</option><option selected>Medium</option><option>Low</option></select></label>
-        <label class="field"><span>Effort</span><select id="idEffort"><option>High</option><option>Medium</option><option selected>Low</option></select></label>
-        <label class="field wide"><span>What problem did you see?</span><textarea id="idProblem" rows="2" placeholder="Milk fridge is far from the machine, six steps per latte in the rush"></textarea></label>
-        <label class="field wide"><span>What would you change?</span><textarea id="idChange" rows="2" placeholder="Move the fridge next to the steam wand and mark a syrup station"></textarea></label>
-      </div>
-      <div class="row between"><span class="small muted" id="idMsg"></span><span class="row"><button class="btn ghost" type="button" id="idCancel" data-act="cancel-edit" hidden>Cancel</button><button class="btn" type="submit" id="idSubmit">Add idea</button></span></div>
-    </form>
-    <div class="card"><div id="ideaList" class="list"></div></div>
+  <section class="tab" id="tab-me" hidden>
+    <div class="head"><div><h2>me</h2><p>Your skills and your recent coffee checks.</p></div></div>
+    <div id="meBody" class="stack"></div>
   </section>
 
   <section class="tab" id="tab-access" hidden>
@@ -581,8 +507,8 @@ body{overflow-x:hidden}
     <div class="card"><h3>People</h3><div id="accessList" class="list"></div></div>
   </section>
 
-  <section class="tab" id="tab-setup" hidden>
-    <div class="head"><div><h2>setup</h2><p>Change the skills, responsibilities, coffee recipes and onboarding steps your team uses, and take a backup.</p></div></div>
+    <section class="tab" id="tab-setup" hidden>
+    <div class="head"><div><h2>setup</h2><p>Your locations, the skills you rate, and a backup of everything.</p></div></div>
     <div id="setupBody" class="stack"></div>
   </section>
 </main>
@@ -594,7 +520,7 @@ body{overflow-x:hidden}
 <div class="auth" id="auth" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<script src="app.js?v=2026-10-13.5"></script>
-<script src="motion.js?v=2026-10-13.5" defer></script>
+<script src="app.js?v=2026-10-29.1"></script>
+<script src="motion.js?v=2026-10-29.1" defer></script>
 </body>
 </html>
