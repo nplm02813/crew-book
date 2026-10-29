@@ -1,7 +1,7 @@
 {
   "name": "Crew Book",
   "short_name": "Crew Book",
-  "description": "Barista skills, coffee checks and leadership tracking",
+  "description": "Barista skills and coffee checks by location",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
