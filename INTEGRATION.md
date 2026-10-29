@@ -49,4 +49,4 @@ If the company site uses a strict Content-Security-Policy, allow those three hos
 
 - Works in current Safari, Chrome, Firefox and Edge, on phones and computers.
 - Everything animated switches off for people with "reduce motion" turned on.
-- The previous, fuller version (leadership group, ideas, responsibilities, charts) is kept in git on the branch `full-v2` if it is ever wanted back.
+- The previous, fuller version (leadership group, ideas, responsibilities, charts) is kept in the git history (commit `fce0376`) if it is ever wanted back.
